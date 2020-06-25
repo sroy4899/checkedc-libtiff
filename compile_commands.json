@@ -1,0 +1,28 @@
+[
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-std=gnu99",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "mkg3states.c"
+        ],
+        "directory": "/Users/shilpa-roy/checked-libtiff/",
+        "file": "mkg3states.c"
+    },
+    {
+        "arguments": [
+            "cc",
+            "-c",
+            "-std=gnu99",
+            "-O2",
+            "-Wall",
+            "-Wextra",
+            "tif_zstd.c"
+        ],
+        "directory": "/home/ins/Projects/checkedc-lua/src",
+        "file": "tif_zstd.c"
+    }
+]
