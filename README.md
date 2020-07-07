@@ -1,15 +1,71 @@
-# Checked C Libtiff Conversion
+TIFF Software Distribution
+--------------------------
+This file is just a placeholder; all the documentation is now in
+HTML in the html directory.  To view the documentation point your
+favorite WWW viewer at html/index.html; 
 
-This repository is dedicated to the testing of the Checked-C conversion tool available [here](https://github.com/plum-umd/checkedc-clang/tree/BigRefactor). 
+e.g.
 
-This repository contains several branches. This branch (**master**) will have C code and relevant documentation.   
+    firefox html/index.html
 
-[Baseline](https://github.com/sroy4899/checkedc-libtiff/tree/baseline) represents this same C Code, but refactored in order to mimic the structure of [a similar repo for testing vsftpd](https://github.com/plum-umd/checkedc-eval-vsftpd/blob/re-port/README.md). It includes scripts for running the conversion tool and replacing the converted files. 
+If you don't have an HTML viewer then you can read the HTML source
+or fetch a PostScript version of this documentation from the directory
 
-[Sane-baseline](https://github.com/sroy4899/checkedc-libtiff/sane-baseline) represents code from **Baseline** that has been modified in order to make conversion work. (EX. pruning features that are not yet supported by the tool that are making it crash, etc.). As the tool evolves and these features are supported, changes in **Sane-baseline** will be reverted/modified. 
+    http://download.osgeo.org/libtiff/
 
-[Baseline-converted](https://github.com/sroy4899/checkedc-libtiff/baseline-converted) represents code from **Baseline** that has been fully converted with the latest changes from the conversion tool. Commits to this branch are hashed by the relevant commit from the tool. Conversion on this branch is run without `-alltypes`, so will only support `_Ptr` conversions. 
+If you can't hack either of these options then basically what you
+want to do is:
 
-Similarly, [Sane-baseline-converted](https://github.com/sroy4899/checkedc-libtiff/sane-baseline-converted) represents code from **Sane-baseline** that has been converterted with the `-alltypes` flag enabled, thereby supporting `_Array_ptr`, `_Nt_array_ptr`, and `_Checked` annotations. 
+    % ./configure
+    % make
+    % su
+    # make install
 
-In order to test the tool, checkout either **Baseline** or **Sane-baseline**, run the tool, and run the script `diff.py` in order to get accurate information about the changes that have happened.
+More information, email contacts, and mailing list information can be 
+found online at http://www.simplesystems.org/libtiff/
+
+Source code repository
+----------------------
+
+[GitLab](https://gitlab.com/libtiff/libtiff)
+
+Bug database
+------------
+
+[GitLab issues](https://gitlab.com/libtiff/libtiff/issues)
+
+Previously, the project used
+[Bugzilla](http://bugzilla.maptools.org/buglist.cgi?product=libtiff). This
+is no longer in use, and all remaining issues have been migrated to GitLab.
+
+Use and Copyright
+-----------------
+Silicon Graphics has seen fit to allow us to give this work away.  It
+is free.  There is no support or guarantee of any sort as to its
+operations, correctness, or whatever.  If you do anything useful with
+all or parts of it you need to honor the copyright notices.   I would
+also be interested in knowing about it and, hopefully, be acknowledged.
+
+The legal way of saying that is:
+
+Copyright (c) 1988-1997 Sam Leffler
+Copyright (c) 1991-1997 Silicon Graphics, Inc.
+
+Permission to use, copy, modify, distribute, and sell this software and 
+its documentation for any purpose is hereby granted without fee, provided
+that (i) the above copyright notices and this permission notice appear in
+all copies of the software and related documentation, and (ii) the names of
+Sam Leffler and Silicon Graphics may not be used in any advertising or
+publicity relating to the software without the specific, prior written
+permission of Sam Leffler and Silicon Graphics.
+
+THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
+EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
+
+IN NO EVENT SHALL SAM LEFFLER OR SILICON GRAPHICS BE LIABLE FOR
+ANY SPECIAL, INCIDENTAL, INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND,
+OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF 
+LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE 
+OF THIS SOFTWARE.
