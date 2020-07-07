@@ -38,8 +38,7 @@
 #define DATATYPE_UINT		2       /* !unsigned integer data */
 #define DATATYPE_IEEEFP		3       /* !IEEE floating point data */
 
-static void
-setByteArray(void** vpp, void* vp, size_t nmemb, size_t elem_size)
+static void setByteArray(void **vpp, void *vp, size_t nmemb, size_t elem_size)
 {
 	if (*vpp) {
 		_TIFFfree(*vpp);
@@ -53,25 +52,24 @@ setByteArray(void** vpp, void* vp, size_t nmemb, size_t elem_size)
 			_TIFFmemcpy(*vpp, vp, bytes);
 	}
 }
-void _TIFFsetByteArray(void** vpp, void* vp, uint32 n)
+void _TIFFsetByteArray(void **vpp, void *vp, uint32 n)
     { setByteArray(vpp, vp, n, 1); }
-void _TIFFsetString(char** cpp, char* cp)
+void _TIFFsetString(char **cpp, char *cp)
     { setByteArray((void**) cpp, (void*) cp, strlen(cp)+1, 1); }
-static void _TIFFsetNString(char** cpp, char* cp, uint32 n)
+static void _TIFFsetNString(char **cpp, char *cp, uint32 n)
     { setByteArray((void**) cpp, (void*) cp, n, 1); }
-void _TIFFsetShortArray(uint16** wpp, uint16* wp, uint32 n)
+void _TIFFsetShortArray(uint16 **wpp, uint16 *wp, uint32 n)
     { setByteArray((void**) wpp, (void*) wp, n, sizeof (uint16)); }
-void _TIFFsetLongArray(uint32** lpp, uint32* lp, uint32 n)
+void _TIFFsetLongArray(uint32 **lpp, uint32 *lp, uint32 n)
     { setByteArray((void**) lpp, (void*) lp, n, sizeof (uint32)); }
-static void _TIFFsetLong8Array(uint64** lpp, uint64* lp, uint32 n)
+static void _TIFFsetLong8Array(uint64 **lpp, uint64 *lp, uint32 n)
     { setByteArray((void**) lpp, (void*) lp, n, sizeof (uint64)); }
-void _TIFFsetFloatArray(float** fpp, float* fp, uint32 n)
+void _TIFFsetFloatArray(float **fpp, float *fp, uint32 n)
     { setByteArray((void**) fpp, (void*) fp, n, sizeof (float)); }
-void _TIFFsetDoubleArray(double** dpp, double* dp, uint32 n)
+void _TIFFsetDoubleArray(double **dpp, double *dp, uint32 n)
     { setByteArray((void**) dpp, (void*) dp, n, sizeof (double)); }
 
-static void
-setDoubleArrayOneValue(double** vpp, double value, size_t nmemb)
+static void setDoubleArrayOneValue(_Ptr<double*> vpp, double value, size_t nmemb)
 {
 	if (*vpp)
 		_TIFFfree(*vpp);
@@ -86,15 +84,14 @@ setDoubleArrayOneValue(double** vpp, double value, size_t nmemb)
 /*
  * Install extra samples information.
  */
-static int
-setExtraSamples(TIFF* tif, va_list ap, uint32* v)
+static int setExtraSamples(TIFF *tif, va_list ap, _Ptr<uint32> v)
 {
 /* XXX: Unassociated alpha data == 999 is a known Corel Draw bug, see below */
 #define EXTRASAMPLE_COREL_UNASSALPHA 999 
 
 	uint16* va;
 	uint32 i;
-        TIFFDirectory* td = &tif->tif_dir;
+        _Ptr<TIFFDirectory> td =  &tif->tif_dir;
         static const char module[] = "setExtraSamples";
 
 	*v = (uint16) va_arg(ap, uint16_vap);
@@ -122,15 +119,15 @@ setExtraSamples(TIFF* tif, va_list ap, uint32* v)
                 !(td->td_samplesperpixel - td->td_extrasamples > 1))
         {
                 TIFFWarningExt(tif->tif_clientdata,module,
-                    "ExtraSamples tag value is changing, "
-                    "but TransferFunction was read with a different value. Cancelling it");
+                    ((const char *)"ExtraSamples tag value is changing, "
+                    "but TransferFunction was read with a different value. Cancelling it"));
                 TIFFClrFieldBit(tif,FIELD_TRANSFERFUNCTION);
                 _TIFFfree(td->td_transferfunction[0]);
                 td->td_transferfunction[0] = NULL;
         }
 
 	td->td_extrasamples = (uint16) *v;
-	_TIFFsetShortArray(&td->td_sampleinfo, va, td->td_extrasamples);
+	_TIFFsetShortArray(((uint16 **)&td->td_sampleinfo), va, td->td_extrasamples);
 	return 1;
 
 #undef EXTRASAMPLE_COREL_UNASSALPHA
@@ -140,10 +137,9 @@ setExtraSamples(TIFF* tif, va_list ap, uint32* v)
  * Confirm we have "samplesperpixel" ink names separated by \0.  Returns 
  * zero if the ink names are not as expected.
  */
-static uint32
-checkInkNamesString(TIFF* tif, uint32 slen, const char* s)
+static uint32 checkInkNamesString(TIFF *tif, uint32 slen, const char *s)
 {
-	TIFFDirectory* td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	uint16 i = td->td_samplesperpixel;
 
 	if (slen > 0) {
@@ -158,20 +154,19 @@ checkInkNamesString(TIFF* tif, uint32 slen, const char* s)
 		return ((uint32)(cp-s));
 	}
 bad:
-	TIFFErrorExt(tif->tif_clientdata, "TIFFSetField",
-	    "%s: Invalid InkNames value; expecting %d names, found %d",
+	TIFFErrorExt(tif->tif_clientdata, ((const char *)"TIFFSetField"),
+	    ((const char *)"%s: Invalid InkNames value; expecting %d names, found %d"),
 	    tif->tif_name,
 	    td->td_samplesperpixel,
 	    td->td_samplesperpixel-i);
 	return (0);
 }
 
-static int
-_TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
+static int _TIFFVSetField(TIFF *tif, uint32 tag, va_list ap)
 {
 	static const char module[] = "_TIFFVSetField";
 
-	TIFFDirectory* td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	int status = 1;
 	uint32 v32, i, v;
     double dblval;
@@ -274,8 +269,8 @@ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
             if( td->td_sminsamplevalue != NULL )
             {
                 TIFFWarningExt(tif->tif_clientdata,module,
-                    "SamplesPerPixel tag value is changing, "
-                    "but SMinSampleValue tag was read with a different value. Cancelling it");
+                    ((const char *)"SamplesPerPixel tag value is changing, "
+                    "but SMinSampleValue tag was read with a different value. Cancelling it"));
                 TIFFClrFieldBit(tif,FIELD_SMINSAMPLEVALUE);
                 _TIFFfree(td->td_sminsamplevalue);
                 td->td_sminsamplevalue = NULL;
@@ -283,8 +278,8 @@ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
             if( td->td_smaxsamplevalue != NULL )
             {
                 TIFFWarningExt(tif->tif_clientdata,module,
-                    "SamplesPerPixel tag value is changing, "
-                    "but SMaxSampleValue tag was read with a different value. Cancelling it");
+                    ((const char *)"SamplesPerPixel tag value is changing, "
+                    "but SMaxSampleValue tag was read with a different value. Cancelling it"));
                 TIFFClrFieldBit(tif,FIELD_SMAXSAMPLEVALUE);
                 _TIFFfree(td->td_smaxsamplevalue);
                 td->td_smaxsamplevalue = NULL;
@@ -295,8 +290,8 @@ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
                 !(td->td_samplesperpixel - td->td_extrasamples > 1))
             {
                     TIFFWarningExt(tif->tif_clientdata,module,
-                        "SamplesPerPixel tag value is changing, "
-                        "but TransferFunction was read with a different value. Cancelling it");
+                        ((const char *)"SamplesPerPixel tag value is changing, "
+                        "but TransferFunction was read with a different value. Cancelling it"));
                     TIFFClrFieldBit(tif,FIELD_TRANSFERFUNCTION);
                     _TIFFfree(td->td_transferfunction[0]);
                     td->td_transferfunction[0] = NULL;
@@ -384,7 +379,7 @@ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
 		td->td_extrasamples =  (((uint16) va_arg(ap, uint16_vap)) != 0);
 		if (td->td_extrasamples) {
 			uint16 sv = EXTRASAMPLE_ASSOCALPHA;
-			_TIFFsetShortArray(&td->td_sampleinfo, &sv, 1);
+			_TIFFsetShortArray(((uint16 **)&td->td_sampleinfo), ((uint16 *)&sv), 1);
 		}
 		break;
 	case TIFFTAG_TILEWIDTH:
@@ -393,7 +388,7 @@ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
 			if (tif->tif_mode != O_RDONLY)
 				goto badvalue32;
 			TIFFWarningExt(tif->tif_clientdata, tif->tif_name,
-				"Nonstandard tile width %d, convert file", v32);
+				((const char *)"Nonstandard tile width %d, convert file"), v32);
 		}
 		td->td_tilewidth = v32;
 		tif->tif_flags |= TIFF_ISTILED;
@@ -404,7 +399,7 @@ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
 			if (tif->tif_mode != O_RDONLY)
 				goto badvalue32;
 			TIFFWarningExt(tif->tif_clientdata, tif->tif_name,
-			    "Nonstandard tile length %d, convert file", v32);
+			    ((const char *)"Nonstandard tile length %d, convert file"), v32);
 		}
 		td->td_tilelength = v32;
 		tif->tif_flags |= TIFF_ISTILED;
@@ -453,7 +448,7 @@ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
 			    (uint32) td->td_nsubifd);
 		} else {
 			TIFFErrorExt(tif->tif_clientdata, module,
-				     "%s: Sorry, cannot nest SubIFDs",
+				     ((const char *)"%s: Sorry, cannot nest SubIFDs"),
 				     tif->tif_name);
 			status = 0;
 		}
@@ -481,7 +476,7 @@ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
 		v = checkInkNamesString(tif, v, s);
 		status = v > 0;
 		if( v > 0 ) {
-			_TIFFsetNString(&td->td_inknames, s, v);
+			_TIFFsetNString(((char **)&td->td_inknames), s, v);
 			td->td_inknameslen = v;
 		}
 		break;
@@ -507,7 +502,7 @@ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
 		 */
 		if(fip->field_bit != FIELD_CUSTOM) {
 			TIFFErrorExt(tif->tif_clientdata, module,
-			    "%s: Invalid %stag \"%s\" (not supported by codec)",
+			    ((const char *)"%s: Invalid %stag \"%s\" (not supported by codec)"),
 			    tif->tif_name, isPseudoTag(tag) ? "pseudo-" : "",
 			    fip->field_name);
 			status = 0;
@@ -541,7 +536,7 @@ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
 			    sizeof(TIFFTagValue) * td->td_customValueCount);
 			if (!new_customValues) {
 				TIFFErrorExt(tif->tif_clientdata, module,
-				    "%s: Failed to allocate space for list of custom values",
+				    ((const char *)"%s: Failed to allocate space for list of custom values"),
 				    tif->tif_name);
 				status = 0;
 				goto end;
@@ -562,7 +557,7 @@ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
 		if (tv_size == 0) {
 			status = 0;
 			TIFFErrorExt(tif->tif_clientdata, module,
-			    "%s: Bad field type %d for \"%s\"",
+			    ((const char *)"%s: Bad field type %d for \"%s\""),
 			    tif->tif_name, fip->field_type,
 			    fip->field_name);
 			goto end;
@@ -584,7 +579,7 @@ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
 				ma=(uint32)(strlen(mb)+1);
 			}
 			tv->count=ma;
-			setByteArray(&tv->value,mb,ma,1);
+			setByteArray(((void **)&tv->value),mb,ma,1);
 		}
 		else
 		{
@@ -604,8 +599,8 @@ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
 			if (tv->count == 0) {
 				status = 0;
 				TIFFErrorExt(tif->tif_clientdata, module,
-					     "%s: Null count for \"%s\" (type "
-					     "%d, writecount %d, passcount %d)",
+					     ((const char *)"%s: Null count for \"%s\" (type "
+					     "%d, writecount %d, passcount %d)"),
 					     tif->tif_name,
 					     fip->field_name,
 					     fip->field_type,
@@ -622,7 +617,7 @@ _TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
 			}
 
 			if (fip->field_tag == TIFFTAG_DOTRANGE 
-			    && strcmp(fip->field_name,"DotRange") == 0) {
+			    && strcmp(fip->field_name,((const char *)"DotRange")) == 0) {
 				/* TODO: This is an evil exception and should not have been
 				   handled this way ... likely best if we move it into
 				   the directory structure with an explicit field in 
@@ -733,7 +728,7 @@ badvalue:
         {
 		const TIFFField* fip2=TIFFFieldWithTag(tif,tag);
 		TIFFErrorExt(tif->tif_clientdata, module,
-		     "%s: Bad value %u for \"%s\" tag",
+		     ((const char *)"%s: Bad value %u for \"%s\" tag"),
 		     tif->tif_name, v,
 		     fip2 ? fip2->field_name : "Unknown");
 		va_end(ap);
@@ -743,7 +738,7 @@ badvalue32:
         {
 		const TIFFField* fip2=TIFFFieldWithTag(tif,tag);
 		TIFFErrorExt(tif->tif_clientdata, module,
-		     "%s: Bad value %u for \"%s\" tag",
+		     ((const char *)"%s: Bad value %u for \"%s\" tag"),
 		     tif->tif_name, v32,
 		     fip2 ? fip2->field_name : "Unknown");
 		va_end(ap);
@@ -753,7 +748,7 @@ badvaluedouble:
         {
         const TIFFField* fip2=TIFFFieldWithTag(tif,tag);
         TIFFErrorExt(tif->tif_clientdata, module,
-             "%s: Bad value %f for \"%s\" tag",
+             ((const char *)"%s: Bad value %f for \"%s\" tag"),
              tif->tif_name, dblval,
              fip2 ? fip2->field_name : "Unknown");
         va_end(ap);
@@ -770,12 +765,11 @@ badvaluedouble:
  * has commenced, unless its value has no effect
  * on the format of the data that is written.
  */
-static int
-OkToChangeTag(TIFF* tif, uint32 tag)
+static int OkToChangeTag(TIFF *tif, uint32 tag)
 {
 	const TIFFField* fip = TIFFFindField(tif, tag, TIFF_ANY);
 	if (!fip) {			/* unknown tag */
-		TIFFErrorExt(tif->tif_clientdata, "TIFFSetField", "%s: Unknown %stag %u",
+		TIFFErrorExt(tif->tif_clientdata, ((const char *)"TIFFSetField"), ((const char *)"%s: Unknown %stag %u"),
 		    tif->tif_name, isPseudoTag(tag) ? "pseudo-" : "", tag);
 		return (0);
 	}
@@ -787,8 +781,8 @@ OkToChangeTag(TIFF* tif, uint32 tag)
 		 * to those tags that don't/shouldn't affect the
 		 * compression and/or format of the data.
 		 */
-		TIFFErrorExt(tif->tif_clientdata, "TIFFSetField",
-		    "%s: Cannot modify tag \"%s\" while writing",
+		TIFFErrorExt(tif->tif_clientdata, ((const char *)"TIFFSetField"),
+		    ((const char *)"%s: Cannot modify tag \"%s\" while writing"),
 		    tif->tif_name, fip->field_name);
 		return (0);
 	}
@@ -802,8 +796,7 @@ OkToChangeTag(TIFF* tif, uint32 tag)
  * when/if the directory structure is
  * updated.
  */
-int
-TIFFSetField(TIFF* tif, uint32 tag, ...)
+int TIFFSetField(TIFF *tif, uint32 tag, ...)
 {
 	va_list ap;
 	int status;
@@ -817,11 +810,10 @@ TIFFSetField(TIFF* tif, uint32 tag, ...)
 /*
  * Clear the contents of the field in the internal structure.
  */
-int
-TIFFUnsetField(TIFF* tif, uint32 tag)
+int TIFFUnsetField(TIFF *tif, uint32 tag)
 {
     const TIFFField *fip =  TIFFFieldWithTag(tif, tag);
-    TIFFDirectory* td = &tif->tif_dir;
+    _Ptr<TIFFDirectory> td =  &tif->tif_dir;
 
     if( !fip )
         return 0;
@@ -861,17 +853,15 @@ TIFFUnsetField(TIFF* tif, uint32 tag)
  * for building higher-level interfaces on
  * top of the library.
  */
-int
-TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
+int TIFFVSetField(TIFF *tif, uint32 tag, va_list ap)
 {
 	return OkToChangeTag(tif, tag) ?
 	    (*tif->tif_tagmethods.vsetfield)(tif, tag, ap) : 0;
 }
 
-static int
-_TIFFVGetField(TIFF* tif, uint32 tag, va_list ap)
+static int _TIFFVGetField(TIFF *tif, uint32 tag, va_list ap)
 {
-	TIFFDirectory* td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	int ret_val = 1;
 	uint32 standard_tag = tag;
 	const TIFFField* fip = TIFFFindField(tif, tag, TIFF_ANY);
@@ -905,8 +895,8 @@ _TIFFVGetField(TIFF* tif, uint32 tag, va_list ap)
                 /* Fixes http://bugzilla.maptools.org/show_bug.cgi?id=2599 */
                 if( val > td->td_samplesperpixel )
                 {
-                    TIFFWarningExt(tif->tif_clientdata,"_TIFFVGetField",
-                                   "Truncating NumberOfInks from %u to %u",
+                    TIFFWarningExt(tif->tif_clientdata,((const char *)"_TIFFVGetField"),
+                                   ((const char *)"Truncating NumberOfInks from %u to %u"),
                                    val, td->td_samplesperpixel);
                     val = td->td_samplesperpixel;
                 }
@@ -1107,9 +1097,9 @@ _TIFFVGetField(TIFF* tif, uint32 tag, va_list ap)
 				 */
 				if( fip->field_bit != FIELD_CUSTOM )
 				{
-					TIFFErrorExt(tif->tif_clientdata, "_TIFFVGetField",
-					    "%s: Invalid %stag \"%s\" "
-					    "(not supported by codec)",
+					TIFFErrorExt(tif->tif_clientdata, ((const char *)"_TIFFVGetField"),
+					    ((const char *)"%s: Invalid %stag \"%s\" "
+					    "(not supported by codec)"),
 					    tif->tif_name,
 					    isPseudoTag(tag) ? "pseudo-" : "",
 					    fip->field_name);
@@ -1135,7 +1125,7 @@ _TIFFVGetField(TIFF* tif, uint32 tag, va_list ap)
 						*va_arg(ap, void **) = tv->value;
 						ret_val = 1;
 					} else if (fip->field_tag == TIFFTAG_DOTRANGE
-						   && strcmp(fip->field_name,"DotRange") == 0) {
+						   && strcmp(fip->field_name,((const char *)"DotRange")) == 0) {
 						/* TODO: This is an evil exception and should not have been
 						   handled this way ... likely best if we move it into
 						   the directory structure with an explicit field in 
@@ -1227,8 +1217,7 @@ _TIFFVGetField(TIFF* tif, uint32 tag, va_list ap)
  * Return the value of a field in the
  * internal directory structure.
  */
-int
-TIFFGetField(TIFF* tif, uint32 tag, ...)
+int TIFFGetField(TIFF *tif, uint32 tag, ...)
 {
 	int status;
 	va_list ap;
@@ -1245,8 +1234,7 @@ TIFFGetField(TIFF* tif, uint32 tag, ...)
  * for building higher-level interfaces on
  * top of the library.
  */
-int
-TIFFVGetField(TIFF* tif, uint32 tag, va_list ap)
+int TIFFVGetField(TIFF *tif, uint32 tag, va_list ap)
 {
 	const TIFFField* fip = TIFFFindField(tif, tag, TIFF_ANY);
 	return (fip && (isPseudoTag(tag) || TIFFFieldSet(tif, fip->field_bit)) ?
@@ -1263,10 +1251,9 @@ TIFFVGetField(TIFF* tif, uint32 tag, va_list ap)
 /*
  * Release storage associated with a directory.
  */
-void
-TIFFFreeDirectory(TIFF* tif)
+void TIFFFreeDirectory(TIFF *tif : itype(_Ptr<TIFF>))
 {
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	int            i;
 
 	_TIFFmemset(td->td_fieldsset, 0, FIELD_SETLONGS);
@@ -1307,8 +1294,7 @@ TIFFFreeDirectory(TIFF* tif)
  */
 static TIFFExtendProc _TIFFextender = (TIFFExtendProc) NULL;
 
-TIFFExtendProc
-TIFFSetTagExtender(TIFFExtendProc extender)
+TIFFExtendProc TIFFSetTagExtender(TIFFExtendProc extender)
 {
 	TIFFExtendProc prev = _TIFFextender;
 	_TIFFextender = extender;
@@ -1322,8 +1308,7 @@ TIFFSetTagExtender(TIFFExtendProc extender)
  * The newly created directory will not exist on the file till
  * TIFFWriteDirectory(), TIFFFlush() or TIFFClose() is called.
  */
-int
-TIFFCreateDirectory(TIFF* tif)
+int TIFFCreateDirectory(TIFF *tif)
 {
 	TIFFDefaultDirectory(tif);
 	tif->tif_diroff = 0;
@@ -1335,8 +1320,7 @@ TIFFCreateDirectory(TIFF* tif)
 	return 0;
 }
 
-int
-TIFFCreateCustomDirectory(TIFF* tif, const TIFFFieldArray* infoarray)
+int TIFFCreateCustomDirectory(TIFF *tif, _Ptr<const TIFFFieldArray> infoarray)
 {
 	TIFFDefaultDirectory(tif);
 
@@ -1356,10 +1340,9 @@ TIFFCreateCustomDirectory(TIFF* tif, const TIFFFieldArray* infoarray)
 	return 0;
 }
 
-int
-TIFFCreateEXIFDirectory(TIFF* tif)
+int TIFFCreateEXIFDirectory(TIFF *tif)
 {
-	const TIFFFieldArray* exifFieldArray;
+	_Ptr<const TIFFFieldArray> exifFieldArray = ((void *)0);
 	exifFieldArray = _TIFFGetExifFields();
 	return TIFFCreateCustomDirectory(tif, exifFieldArray);
 }
@@ -1367,11 +1350,10 @@ TIFFCreateEXIFDirectory(TIFF* tif)
 /*
  * Setup a default directory structure.
  */
-int
-TIFFDefaultDirectory(TIFF* tif)
+int TIFFDefaultDirectory(TIFF *tif)
 {
 	register TIFFDirectory* td = &tif->tif_dir;
-	const TIFFFieldArray* tiffFieldArray;
+	_Ptr<const TIFFFieldArray> tiffFieldArray = ((void *)0);
 
 	tiffFieldArray = _TIFFGetFields();
 	_TIFFSetupFields(tif, tiffFieldArray);   
@@ -1439,8 +1421,7 @@ TIFFDefaultDirectory(TIFF* tif)
 	return (1);
 }
 
-static int
-TIFFAdvanceDirectory(TIFF* tif, uint64* nextdir, uint64* off)
+static int TIFFAdvanceDirectory(TIFF *tif : itype(_Ptr<TIFF>), uint64 *nextdir, _Ptr<uint64> off)
 {
 	static const char module[] = "TIFFAdvanceDirectory";
 	if (isMapped(tif))
@@ -1455,25 +1436,25 @@ TIFFAdvanceDirectory(TIFF* tif, uint64* nextdir, uint64* off)
 			poffb=poffa+sizeof(uint16);
 			if (((uint64)poffa!=poff)||(poffb<poffa)||(poffb<(tmsize_t)sizeof(uint16))||(poffb>tif->tif_size))
 			{
-				TIFFErrorExt(tif->tif_clientdata,module,"Error fetching directory count");
+				TIFFErrorExt(tif->tif_clientdata,module,((const char *)"Error fetching directory count"));
                                   *nextdir=0;
 				return(0);
 			}
 			_TIFFmemcpy(&dircount,tif->tif_base+poffa,sizeof(uint16));
 			if (tif->tif_flags&TIFF_SWAB)
-				TIFFSwabShort(&dircount);
+				TIFFSwabShort(((uint16 *)&dircount));
 			poffc=poffb+dircount*12;
 			poffd=poffc+sizeof(uint32);
 			if ((poffc<poffb)||(poffc<dircount*12)||(poffd<poffc)||(poffd<(tmsize_t)sizeof(uint32))||(poffd>tif->tif_size))
 			{
-				TIFFErrorExt(tif->tif_clientdata,module,"Error fetching directory link");
+				TIFFErrorExt(tif->tif_clientdata,module,((const char *)"Error fetching directory link"));
 				return(0);
 			}
 			if (off!=NULL)
 				*off=(uint64)poffc;
 			_TIFFmemcpy(&nextdir32,tif->tif_base+poffc,sizeof(uint32));
 			if (tif->tif_flags&TIFF_SWAB)
-				TIFFSwabLong(&nextdir32);
+				TIFFSwabLong(((uint32 *)&nextdir32));
 			*nextdir=nextdir32;
 		}
 		else
@@ -1485,15 +1466,15 @@ TIFFAdvanceDirectory(TIFF* tif, uint64* nextdir, uint64* off)
 			poffb=poffa+sizeof(uint64);
 			if (((uint64)poffa!=poff)||(poffb<poffa)||(poffb<(tmsize_t)sizeof(uint64))||(poffb>tif->tif_size))
 			{
-				TIFFErrorExt(tif->tif_clientdata,module,"Error fetching directory count");
+				TIFFErrorExt(tif->tif_clientdata,module,((const char *)"Error fetching directory count"));
 				return(0);
 			}
 			_TIFFmemcpy(&dircount64,tif->tif_base+poffa,sizeof(uint64));
 			if (tif->tif_flags&TIFF_SWAB)
-				TIFFSwabLong8(&dircount64);
+				TIFFSwabLong8(((uint64 *)&dircount64));
 			if (dircount64>0xFFFF)
 			{
-				TIFFErrorExt(tif->tif_clientdata,module,"Sanity check on directory count failed");
+				TIFFErrorExt(tif->tif_clientdata,module,((const char *)"Sanity check on directory count failed"));
 				return(0);
 			}
 			dircount16=(uint16)dircount64;
@@ -1501,7 +1482,7 @@ TIFFAdvanceDirectory(TIFF* tif, uint64* nextdir, uint64* off)
 			poffd=poffc+sizeof(uint64);
 			if ((poffc<poffb)||(poffc<dircount16*20)||(poffd<poffc)||(poffd<(tmsize_t)sizeof(uint64))||(poffd>tif->tif_size))
 			{
-				TIFFErrorExt(tif->tif_clientdata,module,"Error fetching directory link");
+				TIFFErrorExt(tif->tif_clientdata,module,((const char *)"Error fetching directory link"));
 				return(0);
 			}
 			if (off!=NULL)
@@ -1520,12 +1501,12 @@ TIFFAdvanceDirectory(TIFF* tif, uint64* nextdir, uint64* off)
 			uint32 nextdir32;
 			if (!SeekOK(tif, *nextdir) ||
 			    !ReadOK(tif, &dircount, sizeof (uint16))) {
-				TIFFErrorExt(tif->tif_clientdata, module, "%s: Error fetching directory count",
+				TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"%s: Error fetching directory count"),
 				    tif->tif_name);
 				return (0);
 			}
 			if (tif->tif_flags & TIFF_SWAB)
-				TIFFSwabShort(&dircount);
+				TIFFSwabShort(((uint16 *)&dircount));
 			if (off != NULL)
 				*off = TIFFSeekFile(tif,
 				    dircount*12, SEEK_CUR);
@@ -1533,12 +1514,12 @@ TIFFAdvanceDirectory(TIFF* tif, uint64* nextdir, uint64* off)
 				(void) TIFFSeekFile(tif,
 				    dircount*12, SEEK_CUR);
 			if (!ReadOK(tif, &nextdir32, sizeof (uint32))) {
-				TIFFErrorExt(tif->tif_clientdata, module, "%s: Error fetching directory link",
+				TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"%s: Error fetching directory link"),
 				    tif->tif_name);
 				return (0);
 			}
 			if (tif->tif_flags & TIFF_SWAB)
-				TIFFSwabLong(&nextdir32);
+				TIFFSwabLong(((uint32 *)&nextdir32));
 			*nextdir=nextdir32;
 		}
 		else
@@ -1547,15 +1528,15 @@ TIFFAdvanceDirectory(TIFF* tif, uint64* nextdir, uint64* off)
 			uint16 dircount16;
 			if (!SeekOK(tif, *nextdir) ||
 			    !ReadOK(tif, &dircount64, sizeof (uint64))) {
-				TIFFErrorExt(tif->tif_clientdata, module, "%s: Error fetching directory count",
+				TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"%s: Error fetching directory count"),
 				    tif->tif_name);
 				return (0);
 			}
 			if (tif->tif_flags & TIFF_SWAB)
-				TIFFSwabLong8(&dircount64);
+				TIFFSwabLong8(((uint64 *)&dircount64));
 			if (dircount64>0xFFFF)
 			{
-				TIFFErrorExt(tif->tif_clientdata, module, "Error fetching directory count");
+				TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"Error fetching directory count"));
 				return(0);
 			}
 			dircount16 = (uint16)dircount64;
@@ -1567,7 +1548,7 @@ TIFFAdvanceDirectory(TIFF* tif, uint64* nextdir, uint64* off)
 				    dircount16*20, SEEK_CUR);
 			if (!ReadOK(tif, nextdir, sizeof (uint64))) {
 				TIFFErrorExt(tif->tif_clientdata, module,
-                                             "%s: Error fetching directory link",
+                                             ((const char *)"%s: Error fetching directory link"),
 				    tif->tif_name);
 				return (0);
 			}
@@ -1581,8 +1562,7 @@ TIFFAdvanceDirectory(TIFF* tif, uint64* nextdir, uint64* off)
 /*
  * Count the number of directories in a file.
  */
-uint16
-TIFFNumberOfDirectories(TIFF* tif)
+uint16 TIFFNumberOfDirectories(_Ptr<TIFF> tif)
 {
 	static const char module[] = "TIFFNumberOfDirectories";
 	uint64 nextdir;
@@ -1592,7 +1572,7 @@ TIFFNumberOfDirectories(TIFF* tif)
 	else
 		nextdir = tif->tif_header.big.tiff_diroff;
 	n = 0;
-	while (nextdir != 0 && TIFFAdvanceDirectory(tif, &nextdir, NULL))
+	while (nextdir != 0 && TIFFAdvanceDirectory(tif, ((uint64 *)&nextdir), NULL))
         {
                 if (n != 65535) {
                         ++n;
@@ -1600,8 +1580,8 @@ TIFFNumberOfDirectories(TIFF* tif)
 		else
                 {
                         TIFFErrorExt(tif->tif_clientdata, module,
-                                     "Directory count exceeded 65535 limit,"
-                                     " giving up on counting.");
+                                     ((const char *)"Directory count exceeded 65535 limit,"
+                                     " giving up on counting."));
                         return (65535);
                 }
         }
@@ -1612,8 +1592,7 @@ TIFFNumberOfDirectories(TIFF* tif)
  * Set the n-th directory as the current directory.
  * NB: Directories are numbered starting at 0.
  */
-int
-TIFFSetDirectory(TIFF* tif, uint16 dirn)
+int TIFFSetDirectory(TIFF *tif, uint16 dirn)
 {
 	uint64 nextdir;
 	uint16 n;
@@ -1623,7 +1602,7 @@ TIFFSetDirectory(TIFF* tif, uint16 dirn)
 	else
 		nextdir = tif->tif_header.big.tiff_diroff;
 	for (n = dirn; n > 0 && nextdir != 0; n--)
-		if (!TIFFAdvanceDirectory(tif, &nextdir, NULL))
+		if (!TIFFAdvanceDirectory(tif, ((uint64 *)&nextdir), NULL))
 			return (0);
 	tif->tif_nextdiroff = nextdir;
 	/*
@@ -1646,8 +1625,7 @@ TIFFSetDirectory(TIFF* tif, uint16 dirn)
  * is used mainly to access directories linked with
  * the SubIFD tag (e.g. thumbnail images).
  */
-int
-TIFFSetSubDirectory(TIFF* tif, uint64 diroff)
+int TIFFSetSubDirectory(TIFF *tif, uint64 diroff)
 {
 	tif->tif_nextdiroff = diroff;
 	/*
@@ -1661,8 +1639,7 @@ TIFFSetSubDirectory(TIFF* tif, uint64 diroff)
 /*
  * Return file offset of the current directory.
  */
-uint64
-TIFFCurrentDirOffset(TIFF* tif)
+uint64 TIFFCurrentDirOffset(_Ptr<TIFF> tif)
 {
 	return (tif->tif_diroff);
 }
@@ -1671,8 +1648,7 @@ TIFFCurrentDirOffset(TIFF* tif)
  * Return an indication of whether or not we are
  * at the last directory in the file.
  */
-int
-TIFFLastDirectory(TIFF* tif)
+int TIFFLastDirectory(_Ptr<TIFF> tif)
 {
 	return (tif->tif_nextdiroff == 0);
 }
@@ -1680,8 +1656,7 @@ TIFFLastDirectory(TIFF* tif)
 /*
  * Unlink the specified directory from the directory chain.
  */
-int
-TIFFUnlinkDirectory(TIFF* tif, uint16 dirn)
+int TIFFUnlinkDirectory(TIFF *tif, uint16 dirn)
 {
 	static const char module[] = "TIFFUnlinkDirectory";
 	uint64 nextdir;
@@ -1690,7 +1665,7 @@ TIFFUnlinkDirectory(TIFF* tif, uint16 dirn)
 
 	if (tif->tif_mode == O_RDONLY) {
 		TIFFErrorExt(tif->tif_clientdata, module,
-                             "Can not unlink directory in read-only file");
+                             ((const char *)"Can not unlink directory in read-only file"));
 		return (0);
 	}
 	/*
@@ -1710,17 +1685,17 @@ TIFFUnlinkDirectory(TIFF* tif, uint16 dirn)
 	}
 	for (n = dirn-1; n > 0; n--) {
 		if (nextdir == 0) {
-			TIFFErrorExt(tif->tif_clientdata, module, "Directory %d does not exist", dirn);
+			TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"Directory %d does not exist"), dirn);
 			return (0);
 		}
-		if (!TIFFAdvanceDirectory(tif, &nextdir, &off))
+		if (!TIFFAdvanceDirectory(tif, ((uint64 *)&nextdir), &off))
 			return (0);
 	}
 	/*
 	 * Advance to the directory to be unlinked and fetch
 	 * the offset of the directory that follows.
 	 */
-	if (!TIFFAdvanceDirectory(tif, &nextdir, NULL))
+	if (!TIFFAdvanceDirectory(tif, ((uint64 *)&nextdir), NULL))
 		return (0);
 	/*
 	 * Go back and patch the link field of the preceding
@@ -1734,18 +1709,18 @@ TIFFUnlinkDirectory(TIFF* tif, uint16 dirn)
 		nextdir32=(uint32)nextdir;
 		assert((uint64)nextdir32==nextdir);
 		if (tif->tif_flags & TIFF_SWAB)
-			TIFFSwabLong(&nextdir32);
+			TIFFSwabLong(((uint32 *)&nextdir32));
 		if (!WriteOK(tif, &nextdir32, sizeof (uint32))) {
-			TIFFErrorExt(tif->tif_clientdata, module, "Error writing directory link");
+			TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"Error writing directory link"));
 			return (0);
 		}
 	}
 	else
 	{
 		if (tif->tif_flags & TIFF_SWAB)
-			TIFFSwabLong8(&nextdir);
+			TIFFSwabLong8(((uint64 *)&nextdir));
 		if (!WriteOK(tif, &nextdir, sizeof (uint64))) {
-			TIFFErrorExt(tif->tif_clientdata, module, "Error writing directory link");
+			TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"Error writing directory link"));
 			return (0);
 		}
 	}

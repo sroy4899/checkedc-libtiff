@@ -163,10 +163,10 @@ struct logLuvState {
 
 	uint8*                  tbuf;           /* translation buffer */
 	tmsize_t                tbuflen;        /* buffer length */
-	void (*tfunc)(LogLuvState*, uint8*, tmsize_t);
+	_Ptr<void (LogLuvState *, uint8 *, tmsize_t )> tfunc;
 
-	TIFFVSetMethod          vgetparent;     /* super-class method */
-	TIFFVSetMethod          vsetparent;     /* super-class method */
+	_Ptr<int (TIFF *, uint32 , struct __va_list_tag *)> vgetparent;     /* super-class method */
+	_Ptr<int (TIFF *, uint32 , struct __va_list_tag *)> vsetparent;     /* super-class method */
 };
 
 #define DecoderState(tif)	((LogLuvState*) (tif)->tif_data)
@@ -179,8 +179,7 @@ struct logLuvState {
 /*
  * Decode a string of 16-bit gray pixels.
  */
-static int
-LogL16Decode(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
+static int LogL16Decode(TIFF *tif, uint8 *op, tmsize_t occ, uint16 s)
 {
 	static const char module[] = "LogL16Decode";
 	LogLuvState* sp = DecoderState(tif);
@@ -203,7 +202,7 @@ LogL16Decode(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
 	else {
 		if(sp->tbuflen < npixels) {
 			TIFFErrorExt(tif->tif_clientdata, module,
-						 "Translation buffer too short");
+						 ((const char *)"Translation buffer too short"));
 			return (0);
 		}
 		tp = (int16*) sp->tbuf;
@@ -237,7 +236,7 @@ LogL16Decode(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
 				     (unsigned __int64) (npixels - i));
 #else
 			TIFFErrorExt(tif->tif_clientdata, module,
-			    "Not enough data at row %lu (short %llu pixels)",
+			    ((const char *)"Not enough data at row %lu (short %llu pixels)"),
 				     (unsigned long) tif->tif_row,
 				     (unsigned long long) (npixels - i));
 #endif
@@ -255,8 +254,7 @@ LogL16Decode(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
 /*
  * Decode a string of 24-bit pixels.
  */
-static int
-LogLuvDecode24(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
+static int LogLuvDecode24(TIFF *tif, uint8 *op, tmsize_t occ, uint16 s)
 {
 	static const char module[] = "LogLuvDecode24";
 	LogLuvState* sp = DecoderState(tif);
@@ -276,7 +274,7 @@ LogLuvDecode24(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
 	else {
 		if(sp->tbuflen < npixels) {
 			TIFFErrorExt(tif->tif_clientdata, module,
-						 "Translation buffer too short");
+						 ((const char *)"Translation buffer too short"));
 			return (0);
 		}
 		tp = (uint32 *) sp->tbuf;
@@ -299,7 +297,7 @@ LogLuvDecode24(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
 			     (unsigned __int64) (npixels - i));
 #else
 		TIFFErrorExt(tif->tif_clientdata, module,
-			"Not enough data at row %lu (short %llu pixels)",
+			((const char *)"Not enough data at row %lu (short %llu pixels)"),
 			     (unsigned long) tif->tif_row,
 			     (unsigned long long) (npixels - i));
 #endif
@@ -312,8 +310,7 @@ LogLuvDecode24(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
 /*
  * Decode a string of 32-bit pixels.
  */
-static int
-LogLuvDecode32(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
+static int LogLuvDecode32(TIFF *tif, uint8 *op, tmsize_t occ, uint16 s)
 {
 	static const char module[] = "LogLuvDecode32";
 	LogLuvState* sp;
@@ -337,7 +334,7 @@ LogLuvDecode32(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
 	else {
 		if(sp->tbuflen < npixels) {
 			TIFFErrorExt(tif->tif_clientdata, module,
-						 "Translation buffer too short");
+						 ((const char *)"Translation buffer too short"));
 			return (0);
 		}
 		tp = (uint32*) sp->tbuf;
@@ -371,7 +368,7 @@ LogLuvDecode32(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
 				     (unsigned __int64) (npixels - i));
 #else
 			TIFFErrorExt(tif->tif_clientdata, module,
-			"Not enough data at row %lu (short %llu pixels)",
+			((const char *)"Not enough data at row %lu (short %llu pixels)"),
 				     (unsigned long) tif->tif_row,
 				     (unsigned long long) (npixels - i));
 #endif
@@ -391,8 +388,7 @@ LogLuvDecode32(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
  * maintain synchrony with the encode algorithm, which
  * is row by row.
  */
-static int
-LogLuvDecodeStrip(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
+static int LogLuvDecodeStrip(TIFF *tif, uint8 *bp, tmsize_t cc, uint16 s)
 {
 	tmsize_t rowlen = TIFFScanlineSize(tif);
 
@@ -412,8 +408,7 @@ LogLuvDecodeStrip(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
  * maintain synchrony with the encode algorithm, which
  * is row by row.
  */
-static int
-LogLuvDecodeTile(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
+static int LogLuvDecodeTile(TIFF *tif, uint8 *bp, tmsize_t cc, uint16 s)
 {
 	tmsize_t rowlen = TIFFTileRowSize(tif);
 
@@ -431,8 +426,7 @@ LogLuvDecodeTile(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
 /*
  * Encode a row of 16-bit pixels.
  */
-static int
-LogL16Encode(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
+static int LogL16Encode(TIFF *tif, uint8 *bp, tmsize_t cc, uint16 s)
 {
 	static const char module[] = "LogL16Encode";
 	LogLuvState* sp = EncoderState(tif);
@@ -457,7 +451,7 @@ LogL16Encode(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
 		tp = (int16*) sp->tbuf;
 		if(sp->tbuflen < npixels) {
 			TIFFErrorExt(tif->tif_clientdata, module,
-						 "Translation buffer too short");
+						 ((const char *)"Translation buffer too short"));
 			return (0);
 		}
 		(*sp->tfunc)(sp, bp, npixels);
@@ -530,8 +524,7 @@ LogL16Encode(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
 /*
  * Encode a row of 24-bit pixels.
  */
-static int
-LogLuvEncode24(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
+static int LogLuvEncode24(TIFF *tif, uint8 *bp, tmsize_t cc, uint16 s)
 {
 	static const char module[] = "LogLuvEncode24";
 	LogLuvState* sp = EncoderState(tif);
@@ -551,7 +544,7 @@ LogLuvEncode24(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
 		tp = (uint32*) sp->tbuf;
 		if(sp->tbuflen < npixels) {
 			TIFFErrorExt(tif->tif_clientdata, module,
-						 "Translation buffer too short");
+						 ((const char *)"Translation buffer too short"));
 			return (0);
 		}
 		(*sp->tfunc)(sp, bp, npixels);
@@ -582,8 +575,7 @@ LogLuvEncode24(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
 /*
  * Encode a row of 32-bit pixels.
  */
-static int
-LogLuvEncode32(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
+static int LogLuvEncode32(TIFF *tif, uint8 *bp, tmsize_t cc, uint16 s)
 {
 	static const char module[] = "LogLuvEncode32";
 	LogLuvState* sp = EncoderState(tif);
@@ -609,7 +601,7 @@ LogLuvEncode32(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
 		tp = (uint32*) sp->tbuf;
 		if(sp->tbuflen < npixels) {
 			TIFFErrorExt(tif->tif_clientdata, module,
-						 "Translation buffer too short");
+						 ((const char *)"Translation buffer too short"));
 			return (0);
 		}
 		(*sp->tfunc)(sp, bp, npixels);
@@ -683,8 +675,7 @@ LogLuvEncode32(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
  * Encode a strip of pixels.  We break it into rows to
  * avoid encoding runs across row boundaries.
  */
-static int
-LogLuvEncodeStrip(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
+static int LogLuvEncodeStrip(TIFF *tif, uint8 *bp, tmsize_t cc, uint16 s)
 {
 	tmsize_t rowlen = TIFFScanlineSize(tif);
 
@@ -703,8 +694,7 @@ LogLuvEncodeStrip(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
  * Encode a tile of pixels.  We break it into rows to
  * avoid encoding runs across row boundaries.
  */
-static int
-LogLuvEncodeTile(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
+static int LogLuvEncodeTile(TIFF *tif, uint8 *bp, tmsize_t cc, uint16 s)
 {
 	tmsize_t rowlen = TIFFTileRowSize(tif);
 
@@ -754,8 +744,7 @@ static int itrunc(double x, int m)
 #if !LOGLUV_PUBLIC
 static
 #endif
-double
-LogL16toY(int p16)		/* compute luminance from 16-bit LogL */
+double LogL16toY(int p16)		/* compute luminance from 16-bit LogL */
 {
 	int	Le = p16 & 0x7fff;
 	double	Y;
@@ -769,8 +758,7 @@ LogL16toY(int p16)		/* compute luminance from 16-bit LogL */
 #if !LOGLUV_PUBLIC
 static
 #endif
-int
-LogL16fromY(double Y, int em)	/* get 16-bit LogL from Y */
+int LogL16fromY(double Y, int em)	/* get 16-bit LogL from Y */
 {
 	if (Y >= 1.8371976e19)
 		return (0x7fff);
@@ -783,8 +771,7 @@ LogL16fromY(double Y, int em)	/* get 16-bit LogL from Y */
 	return (0);
 }
 
-static void
-L16toY(LogLuvState* sp, uint8* op, tmsize_t n)
+static void L16toY(LogLuvState *sp, uint8 *op, tmsize_t n)
 {
 	int16* l16 = (int16*) sp->tbuf;
 	float* yp = (float*) op;
@@ -793,8 +780,7 @@ L16toY(LogLuvState* sp, uint8* op, tmsize_t n)
 		*yp++ = (float)LogL16toY(*l16++);
 }
 
-static void
-L16toGry(LogLuvState* sp, uint8* op, tmsize_t n)
+static void L16toGry(LogLuvState *sp, uint8 *op, tmsize_t n)
 {
 	int16* l16 = (int16*) sp->tbuf;
 	uint8* gp = (uint8*) op;
@@ -805,8 +791,7 @@ L16toGry(LogLuvState* sp, uint8* op, tmsize_t n)
 	}
 }
 
-static void
-L16fromY(LogLuvState* sp, uint8* op, tmsize_t n)
+static void L16fromY(LogLuvState *sp, uint8 *op, tmsize_t n)
 {
 	int16* l16 = (int16*) sp->tbuf;
 	float* yp = (float*) op;
@@ -818,8 +803,7 @@ L16fromY(LogLuvState* sp, uint8* op, tmsize_t n)
 #if !LOGLUV_PUBLIC
 static
 #endif
-void
-XYZtoRGB24(float xyz[3], uint8 rgb[3])
+void XYZtoRGB24(float xyz[3], uint8 rgb[3])
 {
 	double	r, g, b;
 					/* assume CCIR-709 primaries */
@@ -836,8 +820,7 @@ XYZtoRGB24(float xyz[3], uint8 rgb[3])
 #if !LOGLUV_PUBLIC
 static
 #endif
-double
-LogL10toY(int p10)		/* compute luminance from 10-bit LogL */
+double LogL10toY(int p10)		/* compute luminance from 10-bit LogL */
 {
 	if (p10 == 0)
 		return (0.);
@@ -847,8 +830,7 @@ LogL10toY(int p10)		/* compute luminance from 10-bit LogL */
 #if !LOGLUV_PUBLIC
 static
 #endif
-int
-LogL10fromY(double Y, int em)	/* get 10-bit LogL from Y */
+int LogL10fromY(double Y, int em)	/* get 10-bit LogL from Y */
 {
 	if (Y >= 15.742)
 		return (0x3ff);
@@ -862,8 +844,7 @@ LogL10fromY(double Y, int em)	/* get 10-bit LogL from Y */
 #define uv2ang(u, v)	( (NANGLES*.499999999/M_PI) \
 				* atan2((v)-V_NEU,(u)-U_NEU) + .5*NANGLES )
 
-static int
-oog_encode(double u, double v)		/* encode out-of-gamut chroma */
+static int oog_encode(double u, double v)		/* encode out-of-gamut chroma */
 {
 	static int	oog_table[NANGLES];
 	static int	initialized = 0;
@@ -918,8 +899,7 @@ oog_encode(double u, double v)		/* encode out-of-gamut chroma */
 #if !LOGLUV_PUBLIC
 static
 #endif
-int
-uv_encode(double u, double v, int em)	/* encode (u',v') coordinates */
+int uv_encode(double u, double v, int em) coordinates */
 {
 	register int	vi, ui;
 
@@ -940,8 +920,7 @@ uv_encode(double u, double v, int em)	/* encode (u',v') coordinates */
 #if !LOGLUV_PUBLIC
 static
 #endif
-int
-uv_decode(double *up, double *vp, int c)	/* decode (u',v') index */
+int uv_decode(_Ptr<double> up, _Ptr<double> vp, int c) index */
 {
 	int	upper, lower;
 	register int	ui, vi;
@@ -972,8 +951,7 @@ uv_decode(double *up, double *vp, int c)	/* decode (u',v') index */
 #if !LOGLUV_PUBLIC
 static
 #endif
-void
-LogLuv24toXYZ(uint32 p, float XYZ[3])
+void LogLuv24toXYZ(uint32 p, float XYZ[3])
 {
 	int	Ce;
 	double	L, u, v, s, x, y;
@@ -1000,8 +978,7 @@ LogLuv24toXYZ(uint32 p, float XYZ[3])
 #if !LOGLUV_PUBLIC
 static
 #endif
-uint32
-LogLuv24fromXYZ(float XYZ[3], int em)
+uint32 LogLuv24fromXYZ(float XYZ[3], int em)
 {
 	int	Le, Ce;
 	double	u, v, s;
@@ -1023,8 +1000,7 @@ LogLuv24fromXYZ(float XYZ[3], int em)
 	return (Le << 14 | Ce);
 }
 
-static void
-Luv24toXYZ(LogLuvState* sp, uint8* op, tmsize_t n)
+static void Luv24toXYZ(LogLuvState *sp, uint8 *op, tmsize_t n)
 {
 	uint32* luv = (uint32*) sp->tbuf;  
 	float* xyz = (float*) op;
@@ -1036,8 +1012,7 @@ Luv24toXYZ(LogLuvState* sp, uint8* op, tmsize_t n)
 	}
 }
 
-static void
-Luv24toLuv48(LogLuvState* sp, uint8* op, tmsize_t n)
+static void Luv24toLuv48(LogLuvState *sp, uint8 *op, tmsize_t n)
 {
 	uint32* luv = (uint32*) sp->tbuf;  
 	int16* luv3 = (int16*) op;
@@ -1056,8 +1031,7 @@ Luv24toLuv48(LogLuvState* sp, uint8* op, tmsize_t n)
 	}
 }
 
-static void
-Luv24toRGB(LogLuvState* sp, uint8* op, tmsize_t n)
+static void Luv24toRGB(LogLuvState *sp, uint8 *op, tmsize_t n)
 {
 	uint32* luv = (uint32*) sp->tbuf;  
 	uint8* rgb = (uint8*) op;
@@ -1071,8 +1045,7 @@ Luv24toRGB(LogLuvState* sp, uint8* op, tmsize_t n)
 	}
 }
 
-static void
-Luv24fromXYZ(LogLuvState* sp, uint8* op, tmsize_t n)
+static void Luv24fromXYZ(LogLuvState *sp, uint8 *op, tmsize_t n)
 {
 	uint32* luv = (uint32*) sp->tbuf;  
 	float* xyz = (float*) op;
@@ -1083,8 +1056,7 @@ Luv24fromXYZ(LogLuvState* sp, uint8* op, tmsize_t n)
 	}
 }
 
-static void
-Luv24fromLuv48(LogLuvState* sp, uint8* op, tmsize_t n)
+static void Luv24fromLuv48(LogLuvState *sp, uint8 *op, tmsize_t n)
 {
 	uint32* luv = (uint32*) sp->tbuf;  
 	int16* luv3 = (int16*) op;
@@ -1113,8 +1085,7 @@ Luv24fromLuv48(LogLuvState* sp, uint8* op, tmsize_t n)
 #if !LOGLUV_PUBLIC
 static
 #endif
-void
-LogLuv32toXYZ(uint32 p, float XYZ[3])
+void LogLuv32toXYZ(uint32 p, float XYZ[3])
 {
 	double	L, u, v, s, x, y;
 					/* decode luminance */
@@ -1138,8 +1109,7 @@ LogLuv32toXYZ(uint32 p, float XYZ[3])
 #if !LOGLUV_PUBLIC
 static
 #endif
-uint32
-LogLuv32fromXYZ(float XYZ[3], int em)
+uint32 LogLuv32fromXYZ(float XYZ[3], int em)
 {
 	unsigned int	Le, ue, ve;
 	double	u, v, s;
@@ -1164,8 +1134,7 @@ LogLuv32fromXYZ(float XYZ[3], int em)
 	return (Le << 16 | ue << 8 | ve);
 }
 
-static void
-Luv32toXYZ(LogLuvState* sp, uint8* op, tmsize_t n)
+static void Luv32toXYZ(LogLuvState *sp, uint8 *op, tmsize_t n)
 {
 	uint32* luv = (uint32*) sp->tbuf;  
 	float* xyz = (float*) op;
@@ -1176,8 +1145,7 @@ Luv32toXYZ(LogLuvState* sp, uint8* op, tmsize_t n)
 	}
 }
 
-static void
-Luv32toLuv48(LogLuvState* sp, uint8* op, tmsize_t n)
+static void Luv32toLuv48(LogLuvState *sp, uint8 *op, tmsize_t n)
 {
 	uint32* luv = (uint32*) sp->tbuf;  
 	int16* luv3 = (int16*) op;
@@ -1194,8 +1162,7 @@ Luv32toLuv48(LogLuvState* sp, uint8* op, tmsize_t n)
 	}
 }
 
-static void
-Luv32toRGB(LogLuvState* sp, uint8* op, tmsize_t n)
+static void Luv32toRGB(LogLuvState *sp, uint8 *op, tmsize_t n)
 {
 	uint32* luv = (uint32*) sp->tbuf;  
 	uint8* rgb = (uint8*) op;
@@ -1209,8 +1176,7 @@ Luv32toRGB(LogLuvState* sp, uint8* op, tmsize_t n)
 	}
 }
 
-static void
-Luv32fromXYZ(LogLuvState* sp, uint8* op, tmsize_t n)
+static void Luv32fromXYZ(LogLuvState *sp, uint8 *op, tmsize_t n)
 {
 	uint32* luv = (uint32*) sp->tbuf;  
 	float* xyz = (float*) op;
@@ -1221,8 +1187,7 @@ Luv32fromXYZ(LogLuvState* sp, uint8* op, tmsize_t n)
 	}
 }
 
-static void
-Luv32fromLuv48(LogLuvState* sp, uint8* op, tmsize_t n)
+static void Luv32fromLuv48(LogLuvState *sp, uint8 *op, tmsize_t n)
 {
 	uint32* luv = (uint32*) sp->tbuf;
 	int16* luv3 = (int16*) op;
@@ -1244,14 +1209,12 @@ Luv32fromLuv48(LogLuvState* sp, uint8* op, tmsize_t n)
 	}
 }
 
-static void
-_logLuvNop(LogLuvState* sp, uint8* op, tmsize_t n)
+static void _logLuvNop(LogLuvState *sp, uint8 *op, tmsize_t n)
 {
 	(void) sp; (void) op; (void) n;
 }
 
-static int
-LogL16GuessDataFmt(TIFFDirectory *td)
+static int LogL16GuessDataFmt(_Ptr<TIFFDirectory> td)
 {
 #define	PACK(s,b,f)	(((b)<<6)|((s)<<3)|(f))
 	switch (PACK(td->td_samplesperpixel, td->td_bitspersample, td->td_sampleformat)) {
@@ -1269,17 +1232,15 @@ LogL16GuessDataFmt(TIFFDirectory *td)
 	return (SGILOGDATAFMT_UNKNOWN);
 }
 
-static tmsize_t
-multiply_ms(tmsize_t m1, tmsize_t m2)
+static tmsize_t multiply_ms(tmsize_t m1, tmsize_t m2)
 {
         return _TIFFMultiplySSize(NULL, m1, m2, NULL);
 }
 
-static int
-LogL16InitState(TIFF* tif)
+static int LogL16InitState(TIFF *tif)
 {
 	static const char module[] = "LogL16InitState";
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	LogLuvState* sp = DecoderState(tif);
 
 	assert(sp != NULL);
@@ -1288,7 +1249,7 @@ LogL16InitState(TIFF* tif)
 	if( td->td_samplesperpixel != 1 )
 	{
 		TIFFErrorExt(tif->tif_clientdata, module,
-		             "Sorry, can not handle LogL image with %s=%d",
+		             ((const char *)"Sorry, can not handle LogL image with %s=%d"),
 			     "Samples/pixel", td->td_samplesperpixel);
 		return 0;
 	}
@@ -1308,7 +1269,7 @@ LogL16InitState(TIFF* tif)
 		break;
 	default:
 		TIFFErrorExt(tif->tif_clientdata, module,
-		    "No support for converting user data format to LogL");
+		    ((const char *)"No support for converting user data format to LogL"));
 		return (0);
 	}
         if( isTiled(tif) )
@@ -1319,14 +1280,13 @@ LogL16InitState(TIFF* tif)
             sp->tbuflen = multiply_ms(td->td_imagewidth, td->td_imagelength);
 	if (multiply_ms(sp->tbuflen, sizeof (int16)) == 0 ||
 	    (sp->tbuf = (uint8*) _TIFFmalloc(sp->tbuflen * sizeof (int16))) == NULL) {
-		TIFFErrorExt(tif->tif_clientdata, module, "No space for SGILog translation buffer");
+		TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"No space for SGILog translation buffer"));
 		return (0);
 	}
 	return (1);
 }
 
-static int
-LogLuvGuessDataFmt(TIFFDirectory *td)
+static int LogLuvGuessDataFmt(_Ptr<TIFFDirectory> td)
 {
 	int guess;
 
@@ -1377,11 +1337,10 @@ LogLuvGuessDataFmt(TIFFDirectory *td)
 	return (guess);
 }
 
-static int
-LogLuvInitState(TIFF* tif)
+static int LogLuvInitState(TIFF *tif)
 {
 	static const char module[] = "LogLuvInitState";
-	TIFFDirectory* td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	LogLuvState* sp = DecoderState(tif);
 
 	assert(sp != NULL);
@@ -1390,7 +1349,7 @@ LogLuvInitState(TIFF* tif)
 	/* for some reason, we can't do this in TIFFInitLogLuv */
 	if (td->td_planarconfig != PLANARCONFIG_CONTIG) {
 		TIFFErrorExt(tif->tif_clientdata, module,
-		    "SGILog compression cannot handle non-contiguous data");
+		    ((const char *)"SGILog compression cannot handle non-contiguous data"));
 		return (0);
 	}
 	if (sp->user_datafmt == SGILOGDATAFMT_UNKNOWN)
@@ -1410,7 +1369,7 @@ LogLuvInitState(TIFF* tif)
 		break;
 	default:
 		TIFFErrorExt(tif->tif_clientdata, module,
-		    "No support for converting user data format to LogLuv");
+		    ((const char *)"No support for converting user data format to LogLuv"));
 		return (0);
 	}
         if( isTiled(tif) )
@@ -1421,25 +1380,23 @@ LogLuvInitState(TIFF* tif)
             sp->tbuflen = multiply_ms(td->td_imagewidth, td->td_imagelength);
 	if (multiply_ms(sp->tbuflen, sizeof (uint32)) == 0 ||
 	    (sp->tbuf = (uint8*) _TIFFmalloc(sp->tbuflen * sizeof (uint32))) == NULL) {
-		TIFFErrorExt(tif->tif_clientdata, module, "No space for SGILog translation buffer");
+		TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"No space for SGILog translation buffer"));
 		return (0);
 	}
 	return (1);
 }
 
-static int
-LogLuvFixupTags(TIFF* tif)
+static int LogLuvFixupTags(TIFF *tif)
 {
 	(void) tif;
 	return (1);
 }
 
-static int
-LogLuvSetupDecode(TIFF* tif)
+static int LogLuvSetupDecode(TIFF *tif)
 {
 	static const char module[] = "LogLuvSetupDecode";
 	LogLuvState* sp = DecoderState(tif);
-	TIFFDirectory* td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 
 	tif->tif_postdecode = _TIFFNoPostDecode;
 	switch (td->td_photometric) {
@@ -1489,19 +1446,18 @@ LogLuvSetupDecode(TIFF* tif)
 		return (1);
 	default:
 		TIFFErrorExt(tif->tif_clientdata, module,
-		    "Inappropriate photometric interpretation %d for SGILog compression; %s",
+		    ((const char *)"Inappropriate photometric interpretation %d for SGILog compression; %s"),
 		    td->td_photometric, "must be either LogLUV or LogL");
 		break;
 	}
 	return (0);
 }
 
-static int
-LogLuvSetupEncode(TIFF* tif)
+static int LogLuvSetupEncode(TIFF *tif)
 {
 	static const char module[] = "LogLuvSetupEncode";
 	LogLuvState* sp = EncoderState(tif);
-	TIFFDirectory* td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 
 	switch (td->td_photometric) {
 	case PHOTOMETRIC_LOGLUV:
@@ -1553,7 +1509,7 @@ LogLuvSetupEncode(TIFF* tif)
 		break;
 	default:
 		TIFFErrorExt(tif->tif_clientdata, module,
-		    "Inappropriate photometric interpretation %d for SGILog compression; %s",
+		    ((const char *)"Inappropriate photometric interpretation %d for SGILog compression; %s"),
 		    td->td_photometric, "must be either LogLUV or LogL");
 		return (0);
 	}
@@ -1561,16 +1517,15 @@ LogLuvSetupEncode(TIFF* tif)
 	return (1);
 notsupported:
 	TIFFErrorExt(tif->tif_clientdata, module,
-	    "SGILog compression supported only for %s, or raw data",
+	    ((const char *)"SGILog compression supported only for %s, or raw data"),
 	    td->td_photometric == PHOTOMETRIC_LOGL ? "Y, L" : "XYZ, Luv");
 	return (0);
 }
 
-static void
-LogLuvClose(TIFF* tif)
+static void LogLuvClose(TIFF *tif)
 {
         LogLuvState* sp = (LogLuvState*) tif->tif_data;
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 
 	assert(sp != 0);
 	/*
@@ -1592,8 +1547,7 @@ LogLuvClose(TIFF* tif)
         }
 }
 
-static void
-LogLuvCleanup(TIFF* tif)
+static void LogLuvCleanup(TIFF *tif)
 {
 	LogLuvState* sp = (LogLuvState *)tif->tif_data;
 
@@ -1610,8 +1564,7 @@ LogLuvCleanup(TIFF* tif)
 	_TIFFSetDefaultCompressionState(tif);
 }
 
-static int
-LogLuvVSetField(TIFF* tif, uint32 tag, va_list ap)
+static int LogLuvVSetField(TIFF *tif, uint32 tag, va_list ap)
 {
 	static const char module[] = "LogLuvVSetField";
 	LogLuvState* sp = DecoderState(tif);
@@ -1646,7 +1599,7 @@ LogLuvVSetField(TIFF* tif, uint32 tag, va_list ap)
 			break;
 		default:
 			TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
-			    "Unknown data format %d for LogLuv compression",
+			    ((const char *)"Unknown data format %d for LogLuv compression"),
 			    sp->user_datafmt);
 			return (0);
 		}
@@ -1663,7 +1616,7 @@ LogLuvVSetField(TIFF* tif, uint32 tag, va_list ap)
 		if (sp->encode_meth != SGILOGENCODE_NODITHER &&
 		    sp->encode_meth != SGILOGENCODE_RANDITHER) {
 			TIFFErrorExt(tif->tif_clientdata, module,
-			    "Unknown encoding %d for LogLuv compression",
+			    ((const char *)"Unknown encoding %d for LogLuv compression"),
 			    sp->encode_meth);
 			return (0);
 		}
@@ -1673,8 +1626,7 @@ LogLuvVSetField(TIFF* tif, uint32 tag, va_list ap)
 	}
 }
 
-static int
-LogLuvVGetField(TIFF* tif, uint32 tag, va_list ap)
+static int LogLuvVGetField(TIFF *tif, uint32 tag, va_list ap)
 {
 	LogLuvState *sp = (LogLuvState *)tif->tif_data;
 
@@ -1692,8 +1644,7 @@ static const TIFFField LogLuvFields[] = {
     { TIFFTAG_SGILOGENCODE, 0, 0, TIFF_SHORT, 0, TIFF_SETGET_INT, TIFF_SETGET_UNDEFINED, FIELD_PSEUDO, TRUE, FALSE, "SGILogEncode", NULL}
 };
 
-int
-TIFFInitSGILog(TIFF* tif, int scheme)
+int TIFFInitSGILog(TIFF *tif, int scheme)
 {
 	static const char module[] = "TIFFInitSGILog";
 	LogLuvState* sp;
@@ -1706,7 +1657,7 @@ TIFFInitSGILog(TIFF* tif, int scheme)
 	if (!_TIFFMergeFields(tif, LogLuvFields,
 			      TIFFArrayCount(LogLuvFields))) {
 		TIFFErrorExt(tif->tif_clientdata, module,
-		    "Merging SGILog codec-specific tags failed");
+		    ((const char *)"Merging SGILog codec-specific tags failed"));
 		return 0;
 	}
 
@@ -1749,7 +1700,7 @@ TIFFInitSGILog(TIFF* tif, int scheme)
 	return (1);
 bad:
 	TIFFErrorExt(tif->tif_clientdata, module,
-		     "%s: No space for LogLuv state block", tif->tif_name);
+		     ((const char *)"%s: No space for LogLuv state block"), tif->tif_name);
 	return (0);
 }
 #endif /* LOGLUV_SUPPORT */

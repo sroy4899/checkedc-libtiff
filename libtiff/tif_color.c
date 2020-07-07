@@ -40,9 +40,7 @@
 /*
  * Convert color value from the CIE L*a*b* 1976 space to CIE XYZ.
  */
-void
-TIFFCIELabToXYZ(TIFFCIELabToRGB *cielab, uint32 l, int32 a, int32 b,
-		float *X, float *Y, float *Z)
+void TIFFCIELabToXYZ(TIFFCIELabToRGB *cielab : itype(_Ptr<TIFFCIELabToRGB>), uint32 l, int32 a, int32 b, _Ptr<float> X, _Ptr<float> Y, _Ptr<float> Z)
 {
 	float L = (float)l * 100.0F / 255.0F;
 	float cby, tmp;
@@ -72,9 +70,7 @@ TIFFCIELabToXYZ(TIFFCIELabToRGB *cielab, uint32 l, int32 a, int32 b,
 /*
  * Convert color value from the XYZ space to RGB.
  */
-void
-TIFFXYZToRGB(TIFFCIELabToRGB *cielab, float X, float Y, float Z,
-	     uint32 *r, uint32 *g, uint32 *b)
+void TIFFXYZToRGB(TIFFCIELabToRGB *cielab : itype(_Ptr<TIFFCIELabToRGB>), float X, float Y, float Z, _Ptr<uint32> r, _Ptr<uint32> g, _Ptr<uint32> b)
 {
 	int i;
 	float Yr, Yg, Yb;
@@ -119,9 +115,7 @@ TIFFXYZToRGB(TIFFCIELabToRGB *cielab, float X, float Y, float Z,
  * Allocate conversion state structures and make look_up tables for
  * the Yr,Yb,Yg <=> r,g,b conversions.
  */
-int
-TIFFCIELabToRGBInit(TIFFCIELabToRGB* cielab,
-		    const TIFFDisplay *display, float *refWhite)
+int TIFFCIELabToRGBInit(TIFFCIELabToRGB *cielab : itype(_Ptr<TIFFCIELabToRGB>), const TIFFDisplay *display, float *refWhite)
 {
 	int i;
 	double dfGamma;
@@ -177,9 +171,7 @@ TIFFCIELabToRGBInit(TIFFCIELabToRGB* cielab,
 #define	CLAMP(f,min,max)	((f)<(min)?(min):(f)>(max)?(max):(f))
 #define HICLAMP(f,max)		((f)>(max)?(max):(f))
 
-void
-TIFFYCbCrtoRGB(TIFFYCbCrToRGB *ycbcr, uint32 Y, int32 Cb, int32 Cr,
-	       uint32 *r, uint32 *g, uint32 *b)
+void TIFFYCbCrtoRGB(TIFFYCbCrToRGB *ycbcr : itype(_Ptr<TIFFYCbCrToRGB>), uint32 Y, int32 Cb, int32 Cr, _Ptr<uint32> r, _Ptr<uint32> g, _Ptr<uint32> b)
 {
 	int32 i;
 
@@ -230,8 +222,7 @@ static float CLAMPw(float v, float vmin, float vmax)
  * pre-calculating possible values indexed by Cb and Cr (this code
  * assumes conversion is being done for 8-bit samples).
  */
-int
-TIFFYCbCrToRGBInit(TIFFYCbCrToRGB* ycbcr, float *luma, float *refBlackWhite)
+int TIFFYCbCrToRGBInit(TIFFYCbCrToRGB *ycbcr, float *luma, float *refBlackWhite)
 {
     TIFFRGBValue* clamptab;
     int i;

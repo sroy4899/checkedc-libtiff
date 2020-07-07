@@ -58,7 +58,7 @@ typedef void (*TIFFFaxFillFunc)(unsigned char*, uint32*, uint32*, uint32);
 #if defined(__cplusplus)
 extern "C" {
 #endif
-extern void _TIFFFax3fillruns(unsigned char*, uint32*, uint32*, uint32);
+extern void _TIFFFax3fillruns(unsigned char *, uint32 *, uint32 *, uint32);
 #if defined(__cplusplus)
 }
 #endif

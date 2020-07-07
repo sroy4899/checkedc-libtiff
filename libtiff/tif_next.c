@@ -43,8 +43,7 @@
 #define LITERALSPAN	0x40
 #define WHITE   	((1<<2)-1)
 
-static int
-NeXTDecode(TIFF* tif, uint8* buf, tmsize_t occ, uint16 s)
+static int NeXTDecode(TIFF *tif, uint8 *buf, tmsize_t occ, uint16 s)
 {
 	static const char module[] = "NeXTDecode";
 	unsigned char *bp, *op;
@@ -66,7 +65,7 @@ NeXTDecode(TIFF* tif, uint8* buf, tmsize_t occ, uint16 s)
 	scanline = tif->tif_scanlinesize;
 	if (occ % scanline)
 	{
-		TIFFErrorExt(tif->tif_clientdata, module, "Fractional scanlines cannot be read");
+		TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"Fractional scanlines cannot be read"));
 		return (0);
 	}
 	for (row = buf; cc > 0 && occ > 0; occ -= scanline, row += scanline) {
@@ -127,7 +126,7 @@ NeXTDecode(TIFF* tif, uint8* buf, tmsize_t occ, uint16 s)
 				if (npixels >= imagewidth)
 					break;
                 if (op_offset >= scanline ) {
-                    TIFFErrorExt(tif->tif_clientdata, module, "Invalid data for scanline %ld",
+                    TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"Invalid data for scanline %ld"),
                         (long) tif->tif_row);
                     return (0);
                 }
@@ -144,29 +143,27 @@ NeXTDecode(TIFF* tif, uint8* buf, tmsize_t occ, uint16 s)
 	tif->tif_rawcc = cc;
 	return (1);
 bad:
-	TIFFErrorExt(tif->tif_clientdata, module, "Not enough data for scanline %ld",
+	TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"Not enough data for scanline %ld"),
 	    (long) tif->tif_row);
 	return (0);
 }
 
-static int
-NeXTPreDecode(TIFF* tif, uint16 s)
+static int NeXTPreDecode(TIFF *tif, uint16 s)
 {
 	static const char module[] = "NeXTPreDecode";
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	(void)s;
 
 	if( td->td_bitspersample != 2 )
 	{
-		TIFFErrorExt(tif->tif_clientdata, module, "Unsupported BitsPerSample = %d",
+		TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"Unsupported BitsPerSample = %d"),
 					 td->td_bitspersample);
 		return (0);
 	}
 	return (1);
 }
 	
-int
-TIFFInitNeXT(TIFF* tif, int scheme)
+int TIFFInitNeXT(TIFF *tif, int scheme)
 {
 	(void) scheme;
 	tif->tif_predecode = NeXTPreDecode;  

@@ -29,8 +29,7 @@
  */
 #include "tiffiop.h"
 
-static int
-DumpFixupTags(TIFF* tif)
+static int DumpFixupTags(TIFF *tif)
 {
 	(void) tif;
 	return (1);
@@ -39,8 +38,7 @@ DumpFixupTags(TIFF* tif)
 /*
  * Encode a hunk of pixels.
  */
-static int
-DumpModeEncode(TIFF* tif, uint8* pp, tmsize_t cc, uint16 s)
+static int DumpModeEncode(TIFF *tif, uint8 *pp, tmsize_t cc, uint16 s)
 {
 	(void) s;
 	while (cc > 0) {
@@ -72,8 +70,7 @@ DumpModeEncode(TIFF* tif, uint8* pp, tmsize_t cc, uint16 s)
 /*
  * Decode a hunk of pixels.
  */
-static int
-DumpModeDecode(TIFF* tif, uint8* buf, tmsize_t cc, uint16 s)
+static int DumpModeDecode(TIFF *tif, uint8 *buf, tmsize_t cc, uint16 s)
 {
 	static const char module[] = "DumpModeDecode";
 	(void) s;
@@ -86,7 +83,7 @@ DumpModeDecode(TIFF* tif, uint8* buf, tmsize_t cc, uint16 s)
 		             (signed __int64) cc);
 #else
 		TIFFErrorExt(tif->tif_clientdata, module,
-"Not enough data for scanline %lu, expected a request for at most %lld bytes, got a request for %lld bytes",
+((const char *)"Not enough data for scanline %lu, expected a request for at most %lld bytes, got a request for %lld bytes"),
 		             (unsigned long) tif->tif_row,
 		             (signed long long) tif->tif_rawcc,
 		             (signed long long) cc);
@@ -107,8 +104,7 @@ DumpModeDecode(TIFF* tif, uint8* buf, tmsize_t cc, uint16 s)
 /*
  * Seek forwards nrows in the current strip.
  */
-static int
-DumpModeSeek(TIFF* tif, uint32 nrows)
+static int DumpModeSeek(TIFF *tif, uint32 nrows)
 {
 	tif->tif_rawcp += nrows * tif->tif_scanlinesize;
 	tif->tif_rawcc -= nrows * tif->tif_scanlinesize;
@@ -118,8 +114,7 @@ DumpModeSeek(TIFF* tif, uint32 nrows)
 /*
  * Initialize dump mode.
  */
-int
-TIFFInitDumpMode(TIFF* tif, int scheme)
+int TIFFInitDumpMode(TIFF *tif, int scheme)
 {
 	(void) scheme;
 	tif->tif_fixuptags = DumpFixupTags;  

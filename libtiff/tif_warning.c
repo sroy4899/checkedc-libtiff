@@ -29,24 +29,21 @@
 
 TIFFErrorHandlerExt _TIFFwarningHandlerExt = NULL;
 
-TIFFErrorHandler
-TIFFSetWarningHandler(TIFFErrorHandler handler)
+_Ptr<void (const char *, const char *, struct __va_list_tag *)> TIFFSetWarningHandler(_Ptr<void (const char *, const char *, struct __va_list_tag *)> handler)
 {
-	TIFFErrorHandler prev = _TIFFwarningHandler;
+	_Ptr<void (const char *, const char *, struct __va_list_tag *)> prev =  _TIFFwarningHandler;
 	_TIFFwarningHandler = handler;
 	return (prev);
 }
 
-TIFFErrorHandlerExt
-TIFFSetWarningHandlerExt(TIFFErrorHandlerExt handler)
+TIFFErrorHandlerExt TIFFSetWarningHandlerExt(TIFFErrorHandlerExt handler)
 {
 	TIFFErrorHandlerExt prev = _TIFFwarningHandlerExt;
 	_TIFFwarningHandlerExt = handler;
 	return (prev);
 }
 
-void
-TIFFWarning(const char* module, const char* fmt, ...)
+void TIFFWarning(const char *module, const char *fmt, ...)
 {
 	va_list ap;
 	if (_TIFFwarningHandler) {
@@ -61,8 +58,7 @@ TIFFWarning(const char* module, const char* fmt, ...)
 	}
 }
 
-void
-TIFFWarningExt(thandle_t fd, const char* module, const char* fmt, ...)
+void TIFFWarningExt(thandle_t fd, const char *module, const char *fmt, ...)
 {
 	va_list ap;
 	if (_TIFFwarningHandler) {

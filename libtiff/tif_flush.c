@@ -27,8 +27,7 @@
  */
 #include "tiffiop.h"
 
-int
-TIFFFlush(TIFF* tif)
+int TIFFFlush(TIFF *tif)
 {
     if( tif->tif_mode == O_RDONLY )
         return 1;
@@ -75,7 +74,7 @@ TIFFFlush(TIFF* tif)
  *
  * Returns 1 in case of success, 0 otherwise.
  */
-int TIFFForceStrileArrayWriting(TIFF* tif)
+int TIFFForceStrileArrayWriting(TIFF *tif)
 {
     static const char module[] = "TIFFForceStrileArrayWriting";
     const int isTiled = TIFFIsTiled(tif);
@@ -83,20 +82,20 @@ int TIFFForceStrileArrayWriting(TIFF* tif)
     if (tif->tif_mode == O_RDONLY)
     {
         TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
-                     "File opened in read-only mode");
+                     ((const char *)"File opened in read-only mode"));
         return 0;
     }
     if( tif->tif_diroff == 0 )
     {
         TIFFErrorExt(tif->tif_clientdata, module,
-                     "Directory has not yet been written");
+                     ((const char *)"Directory has not yet been written"));
         return 0;
     }
     if( (tif->tif_flags & TIFF_DIRTYDIRECT) != 0 )
     {
         TIFFErrorExt(tif->tif_clientdata, module,
-                     "Directory has changes other than the strile arrays. "
-                     "TIFFRewriteDirectory() should be called instead");
+                     ((const char *)"Directory has changes other than the strile arrays. "
+                     "TIFFRewriteDirectory() should be called instead"));
         return 0;
     }
 
@@ -112,8 +111,8 @@ int TIFFForceStrileArrayWriting(TIFF* tif)
              tif->tif_dir.td_stripbytecount_entry.tdir_offset.toff_long8 == 0) )
         {
             TIFFErrorExt(tif->tif_clientdata, module,
-                        "Function not called together with "
-                        "TIFFDeferStrileArrayWriting()");
+                        ((const char *)"Function not called together with "
+                        "TIFFDeferStrileArrayWriting()"));
             return 0;
         }
 
@@ -151,8 +150,7 @@ int TIFFForceStrileArrayWriting(TIFF* tif)
  * been writing isn't exactly a an error.  Hopefully this doesn't cause
  * problems for other people. 
  */
-int
-TIFFFlushData(TIFF* tif)
+int TIFFFlushData(TIFF *tif)
 {
 	if ((tif->tif_flags & TIFF_BEENWRITING) == 0)
 		return (1);

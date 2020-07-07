@@ -32,37 +32,34 @@
 #include <math.h>
 #include <float.h>
 
-uint32
-_TIFFMultiply32(TIFF* tif, uint32 first, uint32 second, const char* where)
+uint32 _TIFFMultiply32(_Ptr<TIFF> tif, uint32 first, uint32 second, const char *where)
 {
 	if (second && first > TIFF_UINT32_MAX / second) {
-		TIFFErrorExt(tif->tif_clientdata, where, "Integer overflow in %s", where);
+		TIFFErrorExt(tif->tif_clientdata, where, ((const char *)"Integer overflow in %s"), where);
 		return 0;
 	}
 
 	return first * second;
 }
 
-uint64
-_TIFFMultiply64(TIFF* tif, uint64 first, uint64 second, const char* where)
+uint64 _TIFFMultiply64(TIFF *tif : itype(_Ptr<TIFF>), uint64 first, uint64 second, const char *where)
 {
 	if (second && first > TIFF_UINT64_MAX / second) {
-		TIFFErrorExt(tif->tif_clientdata, where, "Integer overflow in %s", where);
+		TIFFErrorExt(tif->tif_clientdata, where, ((const char *)"Integer overflow in %s"), where);
 		return 0;
 	}
 
 	return first * second;
 }
 
-tmsize_t
-_TIFFMultiplySSize(TIFF* tif, tmsize_t first, tmsize_t second, const char* where)
+tmsize_t _TIFFMultiplySSize(TIFF *tif : itype(_Ptr<TIFF>), tmsize_t first, tmsize_t second, const char *where)
 {
     if( first <= 0 || second <= 0 )
     {
         if( tif != NULL && where != NULL )
         {
             TIFFErrorExt(tif->tif_clientdata, where,
-                        "Invalid argument to _TIFFMultiplySSize() in %s", where);
+                        ((const char *)"Invalid argument to _TIFFMultiplySSize() in %s"), where);
         }
         return 0;
     }
@@ -72,29 +69,27 @@ _TIFFMultiplySSize(TIFF* tif, tmsize_t first, tmsize_t second, const char* where
         if( tif != NULL && where != NULL )
         {
             TIFFErrorExt(tif->tif_clientdata, where,
-                        "Integer overflow in %s", where);
+                        ((const char *)"Integer overflow in %s"), where);
         }
         return 0;
     }
     return first * second;
 }
 
-tmsize_t _TIFFCastUInt64ToSSize(TIFF* tif, uint64 val, const char* module)
+tmsize_t _TIFFCastUInt64ToSSize(TIFF *tif : itype(_Ptr<TIFF>), uint64 val, const char *module)
 {
     if( val > (uint64)TIFF_TMSIZE_T_MAX )
     {
         if( tif != NULL && module != NULL )
         {
-            TIFFErrorExt(tif->tif_clientdata,module,"Integer overflow");
+            TIFFErrorExt(tif->tif_clientdata,module,((const char *)"Integer overflow"));
         }
         return 0;
     }
     return (tmsize_t)val;
 }
 
-void*
-_TIFFCheckRealloc(TIFF* tif, void* buffer,
-		  tmsize_t nmemb, tmsize_t elem_size, const char* what)
+void * _TIFFCheckRealloc(TIFF *tif : itype(_Ptr<TIFF>), void *buffer, tmsize_t nmemb, tmsize_t elem_size, const char *what : itype(_Ptr<const char>))
 {
 	void* cp = NULL;
         tmsize_t count = _TIFFMultiplySSize(tif, nmemb, elem_size, NULL);
@@ -108,22 +103,20 @@ _TIFFCheckRealloc(TIFF* tif, void* buffer,
 
 	if (cp == NULL) {
 		TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
-			     "Failed to allocate memory for %s "
-			     "(%ld elements of %ld bytes each)",
+			     ((const char *)"Failed to allocate memory for %s "
+			     "(%ld elements of %ld bytes each)"),
 			     what,(long) nmemb, (long) elem_size);
 	}
 
 	return cp;
 }
 
-void*
-_TIFFCheckMalloc(TIFF* tif, tmsize_t nmemb, tmsize_t elem_size, const char* what)
+void * _TIFFCheckMalloc(TIFF *tif, tmsize_t nmemb, tmsize_t elem_size, const char *what : itype(_Ptr<const char>))
 {
 	return _TIFFCheckRealloc(tif, NULL, nmemb, elem_size, what);  
 }
 
-static int
-TIFFDefaultTransferFunction(TIFFDirectory* td)
+static int TIFFDefaultTransferFunction(_Ptr<TIFFDirectory> td)
 {
 	uint16 **tf = td->td_transferfunction;
 	tmsize_t i, n, nbytes;
@@ -166,8 +159,7 @@ bad:
 	return 0;
 }
 
-static int
-TIFFDefaultRefBlackWhite(TIFFDirectory* td)
+static int TIFFDefaultRefBlackWhite(_Ptr<TIFFDirectory> td)
 {
 	int i;
 
@@ -204,10 +196,9 @@ TIFFDefaultRefBlackWhite(TIFFDirectory* td)
  *	explicit values so that defaults exist only one
  *	place in the library -- in TIFFDefaultDirectory.
  */
-int
-TIFFVGetFieldDefaulted(TIFF* tif, uint32 tag, va_list ap)
+int TIFFVGetFieldDefaulted(TIFF *tif, uint32 tag, va_list ap)
 {
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 
 	if (TIFFVGetField(tif, tag, ap))
 		return (1);
@@ -251,7 +242,7 @@ TIFFVGetFieldDefaulted(TIFF* tif, uint32 tag, va_list ap)
         if( sp == NULL )
         {
             TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
-                         "Cannot get \"Predictor\" tag as plugin is not configured");
+                         ((const char *)"Cannot get \"Predictor\" tag as plugin is not configured"));
             *va_arg(ap, uint16*) = 0;
             return 0;
         }
@@ -318,7 +309,7 @@ TIFFVGetFieldDefaulted(TIFF* tif, uint32 tag, va_list ap)
 	case TIFFTAG_TRANSFERFUNCTION:
 		if (!td->td_transferfunction[0] &&
 		    !TIFFDefaultTransferFunction(td)) {
-			TIFFErrorExt(tif->tif_clientdata, tif->tif_name, "No space for \"TransferFunction\" tag");
+			TIFFErrorExt(tif->tif_clientdata, tif->tif_name, ((const char *)"No space for \"TransferFunction\" tag"));
 			return (0);
 		}
 		*va_arg(ap, uint16 **) = td->td_transferfunction[0];
@@ -340,8 +331,7 @@ TIFFVGetFieldDefaulted(TIFF* tif, uint32 tag, va_list ap)
  * Like TIFFGetField, but return any default
  * value if the tag is not present in the directory.
  */
-int
-TIFFGetFieldDefaulted(TIFF* tif, uint32 tag, ...)
+int TIFFGetFieldDefaulted(TIFF *tif, uint32 tag, ...)
 {
 	int ok;
 	va_list ap;
@@ -361,8 +351,7 @@ typedef union {
 	int64 value;
 } _Int64;
 
-float
-_TIFFUInt64ToFloat(uint64 ui64)
+float _TIFFUInt64ToFloat(uint64 ui64)
 {
 	_Int64 i;
 
@@ -377,8 +366,7 @@ _TIFFUInt64ToFloat(uint64 ui64)
 	}
 }
 
-double
-_TIFFUInt64ToDouble(uint64 ui64)
+double _TIFFUInt64ToDouble(uint64 ui64)
 {
 	_Int64 i;
 
@@ -393,7 +381,7 @@ _TIFFUInt64ToDouble(uint64 ui64)
 	}
 }
 
-float _TIFFClampDoubleToFloat( double val )
+float _TIFFClampDoubleToFloat(double val)
 {
     if( val > FLT_MAX )
         return FLT_MAX;
@@ -402,7 +390,7 @@ float _TIFFClampDoubleToFloat( double val )
     return (float)val;
 }
 
-int _TIFFSeekOK(TIFF* tif, toff_t off)
+int _TIFFSeekOK(TIFF *tif : itype(_Ptr<TIFF>), toff_t off)
 {
     /* Huge offsets, especially -1 / UINT64_MAX, can cause issues */
     /* See http://bugzilla.maptools.org/show_bug.cgi?id=2726 */

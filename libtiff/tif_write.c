@@ -40,14 +40,13 @@
 	((((tif)->tif_flags & TIFF_BUFFERSETUP) && tif->tif_rawdata) ||	\
 	    TIFFWriteBufferSetup((tif), NULL, (tmsize_t) -1))
 
-static int TIFFGrowStrips(TIFF* tif, uint32 delta, const char* module);
-static int TIFFAppendToStrip(TIFF* tif, uint32 strip, uint8* data, tmsize_t cc);
+static int TIFFGrowStrips(TIFF *tif : itype(_Ptr<TIFF>), uint32 delta, const char *module);
+static int TIFFAppendToStrip(TIFF *tif : itype(_Ptr<TIFF>), uint32 strip, uint8 *data, tmsize_t cc);
 
-int
-TIFFWriteScanline(TIFF* tif, void* buf, uint32 row, uint16 sample)
+int TIFFWriteScanline(TIFF *tif, void *buf, uint32 row, uint16 sample)
 {
 	static const char module[] = "TIFFWriteScanline";
-	register TIFFDirectory *td;
+	register _Ptr<TIFFDirectory> td = ((void *)0);
 	int status, imagegrew = 0;
 	uint32 strip;
 
@@ -70,7 +69,7 @@ TIFFWriteScanline(TIFF* tif, void* buf, uint32 row, uint16 sample)
 	if (row >= td->td_imagelength) {	/* extend image */
 		if (td->td_planarconfig == PLANARCONFIG_SEPARATE) {
 			TIFFErrorExt(tif->tif_clientdata, module,
-			    "Can not change \"ImageLength\" when using separate planes");
+			    ((const char *)"Can not change \"ImageLength\" when using separate planes"));
 			return (-1);
 		}
 		td->td_imagelength = row+1;
@@ -82,7 +81,7 @@ TIFFWriteScanline(TIFF* tif, void* buf, uint32 row, uint16 sample)
 	if (td->td_planarconfig == PLANARCONFIG_SEPARATE) {
 		if (sample >= td->td_samplesperpixel) {
 			TIFFErrorExt(tif->tif_clientdata, module,
-			    "%lu: Sample out of range, max %lu",
+			    ((const char *)"%lu: Sample out of range, max %lu"),
 			    (unsigned long) sample, (unsigned long) td->td_samplesperpixel);
 			return (-1);
 		}
@@ -114,7 +113,7 @@ TIFFWriteScanline(TIFF* tif, void* buf, uint32 row, uint16 sample)
 			td->td_stripsperimage =
 			    TIFFhowmany_32(td->td_imagelength,td->td_rowsperstrip);
                 if (td->td_stripsperimage == 0) {
-                        TIFFErrorExt(tif->tif_clientdata, module, "Zero strips per image");
+                        TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"Zero strips per image"));
                         return (-1);
                 }
 		tif->tif_row =
@@ -180,9 +179,9 @@ TIFFWriteScanline(TIFF* tif, void* buf, uint32 row, uint16 sample)
 /* more bytes available in the output buffer than the previous byte count, */
 /* so that TIFFAppendToStrip() will detect the overflow when it is called the first */
 /* time if the new compressed tile is bigger than the older one. (GDAL #4771) */
-static int _TIFFReserveLargeEnoughWriteBuffer(TIFF* tif, uint32 strip_or_tile)
+static int _TIFFReserveLargeEnoughWriteBuffer(TIFF *tif, uint32 strip_or_tile)
 {
-    TIFFDirectory *td = &tif->tif_dir;
+    _Ptr<TIFFDirectory> td =  &tif->tif_dir;
     if( td->td_stripbytecount_p[strip_or_tile] > 0 )
     {
         /* The +1 is to ensure at least one extra bytes */
@@ -208,11 +207,10 @@ static int _TIFFReserveLargeEnoughWriteBuffer(TIFF* tif, uint32 strip_or_tile)
  *
  * NB: Image length must be setup before writing.
  */
-tmsize_t
-TIFFWriteEncodedStrip(TIFF* tif, uint32 strip, void* data, tmsize_t cc)
+tmsize_t TIFFWriteEncodedStrip(TIFF *tif, uint32 strip, void *data, tmsize_t cc)
 {
 	static const char module[] = "TIFFWriteEncodedStrip";
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	uint16 sample;
 
 	if (!WRITECHECKSTRIPS(tif, module))
@@ -229,7 +227,7 @@ TIFFWriteEncodedStrip(TIFF* tif, uint32 strip, void* data, tmsize_t cc)
 	if (strip >= td->td_nstrips) {
 		if (td->td_planarconfig == PLANARCONFIG_SEPARATE) {
 			TIFFErrorExt(tif->tif_clientdata, module,
-			    "Can not grow image by strips when using separate planes");
+			    ((const char *)"Can not grow image by strips when using separate planes"));
 			return ((tmsize_t) -1);
 		}
 		if (!TIFFGrowStrips(tif, 1, module))
@@ -256,7 +254,7 @@ TIFFWriteEncodedStrip(TIFF* tif, uint32 strip, void* data, tmsize_t cc)
         tif->tif_rawcp = tif->tif_rawdata;
 
         if (td->td_stripsperimage == 0) {
-                TIFFErrorExt(tif->tif_clientdata, module, "Zero strips per image");
+                TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"Zero strips per image"));
                 return ((tmsize_t) -1);
         }
 
@@ -312,11 +310,10 @@ TIFFWriteEncodedStrip(TIFF* tif, uint32 strip, void* data, tmsize_t cc)
  *
  * NB: Image length must be setup before writing.
  */
-tmsize_t
-TIFFWriteRawStrip(TIFF* tif, uint32 strip, void* data, tmsize_t cc)
+tmsize_t TIFFWriteRawStrip(TIFF *tif, uint32 strip, void *data, tmsize_t cc)
 {
 	static const char module[] = "TIFFWriteRawStrip";
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 
 	if (!WRITECHECKSTRIPS(tif, module))
 		return ((tmsize_t) -1);
@@ -332,7 +329,7 @@ TIFFWriteRawStrip(TIFF* tif, uint32 strip, void* data, tmsize_t cc)
 	if (strip >= td->td_nstrips) {
 		if (td->td_planarconfig == PLANARCONFIG_SEPARATE) {
 			TIFFErrorExt(tif->tif_clientdata, module,
-			    "Can not grow image by strips when using separate planes");
+			    ((const char *)"Can not grow image by strips when using separate planes"));
 			return ((tmsize_t) -1);
 		}
 		/*
@@ -348,7 +345,7 @@ TIFFWriteRawStrip(TIFF* tif, uint32 strip, void* data, tmsize_t cc)
 	}
 	tif->tif_curstrip = strip;
         if (td->td_stripsperimage == 0) {
-                TIFFErrorExt(tif->tif_clientdata, module,"Zero strips per image");
+                TIFFErrorExt(tif->tif_clientdata, module,((const char *)"Zero strips per image"));
                 return ((tmsize_t) -1);
         }
 	tif->tif_row = (strip % td->td_stripsperimage) * td->td_rowsperstrip;
@@ -360,8 +357,7 @@ TIFFWriteRawStrip(TIFF* tif, uint32 strip, void* data, tmsize_t cc)
  * Write and compress a tile of data.  The
  * tile is selected by the (x,y,z,s) coordinates.
  */
-tmsize_t
-TIFFWriteTile(TIFF* tif, void* buf, uint32 x, uint32 y, uint32 z, uint16 s)
+tmsize_t TIFFWriteTile(TIFF *tif, void *buf, uint32 x, uint32 y, uint32 z, uint16 s)
 {
 	if (!TIFFCheckTile(tif, x, y, z, s))
 		return ((tmsize_t)(-1));
@@ -387,11 +383,10 @@ TIFFWriteTile(TIFF* tif, void* buf, uint32 x, uint32 y, uint32 z, uint16 s)
  *     interface does not support automatically growing
  *     the image on each write (as TIFFWriteScanline does).
  */
-tmsize_t
-TIFFWriteEncodedTile(TIFF* tif, uint32 tile, void* data, tmsize_t cc)
+tmsize_t TIFFWriteEncodedTile(TIFF *tif, uint32 tile, void *data, tmsize_t cc)
 {
 	static const char module[] = "TIFFWriteEncodedTile";
-	TIFFDirectory *td;
+	_Ptr<TIFFDirectory> td = ((void *)0);
 	uint16 sample;
         uint32 howmany32;
 
@@ -399,7 +394,7 @@ TIFFWriteEncodedTile(TIFF* tif, uint32 tile, void* data, tmsize_t cc)
 		return ((tmsize_t)(-1));
 	td = &tif->tif_dir;
 	if (tile >= td->td_nstrips) {
-		TIFFErrorExt(tif->tif_clientdata, module, "Tile %lu out of range, max %lu",
+		TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"Tile %lu out of range, max %lu"),
 		    (unsigned long) tile, (unsigned long) td->td_nstrips);
 		return ((tmsize_t)(-1));
 	}
@@ -427,13 +422,13 @@ TIFFWriteEncodedTile(TIFF* tif, uint32 tile, void* data, tmsize_t cc)
 	 */
         howmany32=TIFFhowmany_32(td->td_imagelength, td->td_tilelength);
         if (howmany32 == 0) {
-                 TIFFErrorExt(tif->tif_clientdata,module,"Zero tiles");
+                 TIFFErrorExt(tif->tif_clientdata,module,((const char *)"Zero tiles"));
                 return ((tmsize_t)(-1));
         }
 	tif->tif_row = (tile % howmany32) * td->td_tilelength;
         howmany32=TIFFhowmany_32(td->td_imagewidth, td->td_tilewidth);
         if (howmany32 == 0) {
-                 TIFFErrorExt(tif->tif_clientdata,module,"Zero tiles");
+                 TIFFErrorExt(tif->tif_clientdata,module,((const char *)"Zero tiles"));
                 return ((tmsize_t)(-1));
         }
 	tif->tif_col = (tile % howmany32) * td->td_tilewidth;
@@ -499,15 +494,14 @@ TIFFWriteEncodedTile(TIFF* tif, uint32 tile, void* data, tmsize_t cc)
  *     interface does not support automatically growing
  *     the image on each write (as TIFFWriteScanline does).
  */
-tmsize_t
-TIFFWriteRawTile(TIFF* tif, uint32 tile, void* data, tmsize_t cc)
+tmsize_t TIFFWriteRawTile(TIFF *tif, uint32 tile, void *data, tmsize_t cc)
 {
 	static const char module[] = "TIFFWriteRawTile";
 
 	if (!WRITECHECKTILES(tif, module))
 		return ((tmsize_t)(-1));
 	if (tile >= tif->tif_dir.td_nstrips) {
-		TIFFErrorExt(tif->tif_clientdata, module, "Tile %lu out of range, max %lu",
+		TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"Tile %lu out of range, max %lu"),
 		    (unsigned long) tile,
 		    (unsigned long) tif->tif_dir.td_nstrips);
 		return ((tmsize_t)(-1));
@@ -519,10 +513,9 @@ TIFFWriteRawTile(TIFF* tif, uint32 tile, void* data, tmsize_t cc)
 #define	isUnspecified(tif, f) \
     (TIFFFieldSet(tif,f) && (tif)->tif_dir.td_imagelength == 0)
 
-int
-TIFFSetupStrips(TIFF* tif)
+int TIFFSetupStrips(TIFF *tif)
 {
-	TIFFDirectory* td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 
 	if (isTiled(tif))
 		td->td_stripsperimage =
@@ -561,17 +554,16 @@ TIFFSetupStrips(TIFF* tif)
  * we also "freeze" the state of the directory so
  * that important information is not changed.
  */
-int
-TIFFWriteCheck(TIFF* tif, int tiles, const char* module)
+int TIFFWriteCheck(TIFF *tif, int tiles, const char *module)
 {
 	if (tif->tif_mode == O_RDONLY) {
-		TIFFErrorExt(tif->tif_clientdata, module, "File not open for writing");
+		TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"File not open for writing"));
 		return (0);
 	}
 	if (tiles ^ isTiled(tif)) {
-		TIFFErrorExt(tif->tif_clientdata, module, tiles ?
+		TIFFErrorExt(tif->tif_clientdata, module, ((const char *)tiles ?
 		    "Can not write tiles to a striped image" :
-		    "Can not write scanlines to a tiled image");
+		    "Can not write scanlines to a tiled image"));
 		return (0);
 	}
 
@@ -589,7 +581,7 @@ TIFFWriteCheck(TIFF* tif, int tiles, const char* module)
 	 */
 	if (!TIFFFieldSet(tif, FIELD_IMAGEDIMENSIONS)) {
 		TIFFErrorExt(tif->tif_clientdata, module,
-		    "Must set \"ImageWidth\" before writing data");
+		    ((const char *)"Must set \"ImageWidth\" before writing data"));
 		return (0);
 	}
 	if (tif->tif_dir.td_samplesperpixel == 1) {
@@ -604,13 +596,13 @@ TIFFWriteCheck(TIFF* tif, int tiles, const char* module)
 	} else {
 		if (!TIFFFieldSet(tif, FIELD_PLANARCONFIG)) {
 			TIFFErrorExt(tif->tif_clientdata, module,
-			    "Must set \"PlanarConfiguration\" before writing data");
+			    ((const char *)"Must set \"PlanarConfiguration\" before writing data"));
 			return (0);
 		}
 	}
 	if (tif->tif_dir.td_stripoffset_p == NULL && !TIFFSetupStrips(tif)) {
 		tif->tif_dir.td_nstrips = 0;
-		TIFFErrorExt(tif->tif_clientdata, module, "No space for %s arrays",
+		TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"No space for %s arrays"),
 		    isTiled(tif) ? "tile" : "strip");
 		return (0);
 	}
@@ -646,8 +638,7 @@ TIFFWriteCheck(TIFF* tif, int tiles, const char* module)
 /*
  * Setup the raw data buffer used for encoding.
  */
-int
-TIFFWriteBufferSetup(TIFF* tif, void* bp, tmsize_t size)
+int TIFFWriteBufferSetup(TIFF *tif, void *bp, tmsize_t size)
 {
 	static const char module[] = "TIFFWriteBufferSetup";
 
@@ -671,7 +662,7 @@ TIFFWriteBufferSetup(TIFF* tif, void* bp, tmsize_t size)
 	if (bp == NULL) {
 		bp = _TIFFmalloc(size);
 		if (bp == NULL) {
-			TIFFErrorExt(tif->tif_clientdata, module, "No space for output buffer");
+			TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"No space for output buffer"));
 			return (0);
 		}
 		tif->tif_flags |= TIFF_MYBUFFER;
@@ -688,10 +679,9 @@ TIFFWriteBufferSetup(TIFF* tif, void* bp, tmsize_t size)
 /*
  * Grow the strip data structures by delta strips.
  */
-static int
-TIFFGrowStrips(TIFF* tif, uint32 delta, const char* module)
+static int TIFFGrowStrips(TIFF *tif : itype(_Ptr<TIFF>), uint32 delta, const char *module)
 {
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	uint64* new_stripoffset;
 	uint64* new_stripbytecount;
 
@@ -706,7 +696,7 @@ TIFFGrowStrips(TIFF* tif, uint32 delta, const char* module)
 		if (new_stripbytecount)
 			_TIFFfree(new_stripbytecount);
 		td->td_nstrips = 0;
-		TIFFErrorExt(tif->tif_clientdata, module, "No space to expand strip arrays");
+		TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"No space to expand strip arrays"));
 		return (0);
 	}
 	td->td_stripoffset_p = new_stripoffset;
@@ -724,11 +714,10 @@ TIFFGrowStrips(TIFF* tif, uint32 delta, const char* module)
 /*
  * Append the data to the specified strip.
  */
-static int
-TIFFAppendToStrip(TIFF* tif, uint32 strip, uint8* data, tmsize_t cc)
+static int TIFFAppendToStrip(TIFF *tif : itype(_Ptr<TIFF>), uint32 strip, uint8 *data, tmsize_t cc)
 {
 	static const char module[] = "TIFFAppendToStrip";
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	uint64 m;
         int64 old_byte_count = -1;
 
@@ -748,7 +737,7 @@ TIFFAppendToStrip(TIFF* tif, uint32 strip, uint8* data, tmsize_t cc)
                  */
                 if (!SeekOK(tif, td->td_stripoffset_p[strip])) {
                     TIFFErrorExt(tif->tif_clientdata, module,
-                                 "Seek error at scanline %lu",
+                                 ((const char *)"Seek error at scanline %lu"),
                                  (unsigned long)tif->tif_row);
                     return (0);
                 }
@@ -777,11 +766,11 @@ TIFFAppendToStrip(TIFF* tif, uint32 strip, uint8* data, tmsize_t cc)
 		m = (uint32)m;
 	if ((m<tif->tif_curoff)||(m<(uint64)cc))
 	{
-		TIFFErrorExt(tif->tif_clientdata, module, "Maximum TIFF file size exceeded");
+		TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"Maximum TIFF file size exceeded"));
 		return (0);
 	}
 	if (!WriteOK(tif, data, cc)) {
-		TIFFErrorExt(tif->tif_clientdata, module, "Write error at scanline %lu",
+		TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"Write error at scanline %lu"),
 		    (unsigned long) tif->tif_row);
 		    return (0);
 	}
@@ -799,8 +788,7 @@ TIFFAppendToStrip(TIFF* tif, uint32 strip, uint8* data, tmsize_t cc)
  * called by ``encodestrip routines'' w/o concern
  * for infinite recursion.
  */
-int
-TIFFFlushData1(TIFF* tif)
+int TIFFFlushData1(TIFF *tif)
 {
 	if (tif->tif_rawcc > 0 && tif->tif_flags & TIFF_BUF4WRITE ) {
 		if (!isFillOrder(tif, tif->tif_dir.td_fillorder) &&
@@ -830,8 +818,7 @@ TIFFFlushData1(TIFF* tif)
  * (very carefully), or to 0 so that the next write gets
  * appended to the end of the file.
  */
-void
-TIFFSetWriteOffset(TIFF* tif, toff_t off)
+void TIFFSetWriteOffset(TIFF *tif : itype(_Ptr<TIFF>), toff_t off)
 {
 	tif->tif_curoff = off;
 }

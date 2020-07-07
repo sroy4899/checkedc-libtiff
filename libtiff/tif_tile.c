@@ -32,10 +32,9 @@
 /*
  * Compute which tile an (x,y,z,s) value is in.
  */
-uint32
-TIFFComputeTile(TIFF* tif, uint32 x, uint32 y, uint32 z, uint16 s)
+uint32 TIFFComputeTile(TIFF *tif : itype(_Ptr<TIFF>), uint32 x, uint32 y, uint32 z, uint16 s)
 {
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	uint32 dx = td->td_tilewidth;
 	uint32 dy = td->td_tilelength;
 	uint32 dz = td->td_tiledepth;
@@ -69,28 +68,27 @@ TIFFComputeTile(TIFF* tif, uint32 x, uint32 y, uint32 z, uint16 s)
  * Check an (x,y,z,s) coordinate
  * against the image bounds.
  */
-int
-TIFFCheckTile(TIFF* tif, uint32 x, uint32 y, uint32 z, uint16 s)
+int TIFFCheckTile(TIFF *tif : itype(_Ptr<TIFF>), uint32 x, uint32 y, uint32 z, uint16 s)
 {
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 
 	if (x >= td->td_imagewidth) {
 		TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
-			     "%lu: Col out of range, max %lu",
+			     ((const char *)"%lu: Col out of range, max %lu"),
 			     (unsigned long) x,
 			     (unsigned long) (td->td_imagewidth - 1));
 		return (0);
 	}
 	if (y >= td->td_imagelength) {
 		TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
-			     "%lu: Row out of range, max %lu",
+			     ((const char *)"%lu: Row out of range, max %lu"),
 			     (unsigned long) y,
 			     (unsigned long) (td->td_imagelength - 1));
 		return (0);
 	}
 	if (z >= td->td_imagedepth) {
 		TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
-			     "%lu: Depth out of range, max %lu",
+			     ((const char *)"%lu: Depth out of range, max %lu"),
 			     (unsigned long) z,
 			     (unsigned long) (td->td_imagedepth - 1));
 		return (0);
@@ -98,7 +96,7 @@ TIFFCheckTile(TIFF* tif, uint32 x, uint32 y, uint32 z, uint16 s)
 	if (td->td_planarconfig == PLANARCONFIG_SEPARATE &&
 	    s >= td->td_samplesperpixel) {
 		TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
-			     "%lu: Sample out of range, max %lu",
+			     ((const char *)"%lu: Sample out of range, max %lu"),
 			     (unsigned long) s,
 			     (unsigned long) (td->td_samplesperpixel - 1));
 		return (0);
@@ -109,10 +107,9 @@ TIFFCheckTile(TIFF* tif, uint32 x, uint32 y, uint32 z, uint16 s)
 /*
  * Compute how many tiles are in an image.
  */
-uint32
-TIFFNumberOfTiles(TIFF* tif)
+uint32 TIFFNumberOfTiles(TIFF *tif : itype(_Ptr<TIFF>))
 {
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	uint32 dx = td->td_tilewidth;
 	uint32 dy = td->td_tilelength;
 	uint32 dz = td->td_tiledepth;
@@ -127,57 +124,55 @@ TIFFNumberOfTiles(TIFF* tif)
 	ntiles = (dx == 0 || dy == 0 || dz == 0) ? 0 :
 	    _TIFFMultiply32(tif, _TIFFMultiply32(tif, TIFFhowmany_32(td->td_imagewidth, dx),
 	    TIFFhowmany_32(td->td_imagelength, dy),
-	    "TIFFNumberOfTiles"),
-	    TIFFhowmany_32(td->td_imagedepth, dz), "TIFFNumberOfTiles");
+	    ((const char *)"TIFFNumberOfTiles")),
+	    TIFFhowmany_32(td->td_imagedepth, dz), ((const char *)"TIFFNumberOfTiles"));
 	if (td->td_planarconfig == PLANARCONFIG_SEPARATE)
 		ntiles = _TIFFMultiply32(tif, ntiles, td->td_samplesperpixel,
-		    "TIFFNumberOfTiles");
+		    ((const char *)"TIFFNumberOfTiles"));
 	return (ntiles);
 }
 
 /*
  * Compute the # bytes in each row of a tile.
  */
-uint64
-TIFFTileRowSize64(TIFF* tif)
+uint64 TIFFTileRowSize64(TIFF *tif : itype(_Ptr<TIFF>))
 {
         static const char module[] = "TIFFTileRowSize64";
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	uint64 rowsize;
 	uint64 tilerowsize;
 
 	if (td->td_tilelength == 0)
         {
-                TIFFErrorExt(tif->tif_clientdata,module,"Tile length is zero");
+                TIFFErrorExt(tif->tif_clientdata,module,((const char *)"Tile length is zero"));
                 return 0;
         }
         if (td->td_tilewidth == 0)
         {
-                TIFFErrorExt(tif->tif_clientdata,module,"Tile width is zero");
+                TIFFErrorExt(tif->tif_clientdata,module,((const char *)"Tile width is zero"));
 		return (0);
         }
 	rowsize = _TIFFMultiply64(tif, td->td_bitspersample, td->td_tilewidth,
-	    "TIFFTileRowSize");
+	    ((const char *)"TIFFTileRowSize"));
 	if (td->td_planarconfig == PLANARCONFIG_CONTIG)
         {
                 if (td->td_samplesperpixel == 0)
                 {
-                        TIFFErrorExt(tif->tif_clientdata,module,"Samples per pixel is zero");
+                        TIFFErrorExt(tif->tif_clientdata,module,((const char *)"Samples per pixel is zero"));
                         return 0;
                 }
 		rowsize = _TIFFMultiply64(tif, rowsize, td->td_samplesperpixel,
-		    "TIFFTileRowSize");
+		    ((const char *)"TIFFTileRowSize"));
         }
         tilerowsize=TIFFhowmany8_64(rowsize);
         if (tilerowsize == 0)
         {
-                TIFFErrorExt(tif->tif_clientdata,module,"Computed tile row size is zero");
+                TIFFErrorExt(tif->tif_clientdata,module,((const char *)"Computed tile row size is zero"));
                 return 0;
         }
 	return (tilerowsize);
 }
-tmsize_t
-TIFFTileRowSize(TIFF* tif)
+tmsize_t TIFFTileRowSize(TIFF *tif)
 {
 	static const char module[] = "TIFFTileRowSize";
 	uint64 m;
@@ -188,11 +183,10 @@ TIFFTileRowSize(TIFF* tif)
 /*
  * Compute the # bytes in a variable length, row-aligned tile.
  */
-uint64
-TIFFVTileSize64(TIFF* tif, uint32 nrows)
+uint64 TIFFVTileSize64(TIFF *tif, uint32 nrows)
 {
 	static const char module[] = "TIFFVTileSize64";
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	if (td->td_tilelength == 0 || td->td_tilewidth == 0 ||
 	    td->td_tiledepth == 0)
 		return (0);
@@ -221,7 +215,7 @@ TIFFVTileSize64(TIFF* tif, uint32 nrows)
 		    ||(ycbcrsubsampling[1] != 1 && ycbcrsubsampling[1] != 2 && ycbcrsubsampling[1] != 4))
 		{
 			TIFFErrorExt(tif->tif_clientdata,module,
-				     "Invalid YCbCr subsampling (%dx%d)", 
+				     ((const char *)"Invalid YCbCr subsampling (%dx%d)"), 
 				     ycbcrsubsampling[0], 
 				     ycbcrsubsampling[1] );
 			return 0;
@@ -236,8 +230,7 @@ TIFFVTileSize64(TIFF* tif, uint32 nrows)
 	else
 		return(_TIFFMultiply64(tif,nrows,TIFFTileRowSize64(tif),module));
 }
-tmsize_t
-TIFFVTileSize(TIFF* tif, uint32 nrows)
+tmsize_t TIFFVTileSize(TIFF *tif, uint32 nrows)
 {
 	static const char module[] = "TIFFVTileSize";
 	uint64 m;
@@ -248,13 +241,11 @@ TIFFVTileSize(TIFF* tif, uint32 nrows)
 /*
  * Compute the # bytes in a row-aligned tile.
  */
-uint64
-TIFFTileSize64(TIFF* tif)
+uint64 TIFFTileSize64(TIFF *tif)
 {
 	return (TIFFVTileSize64(tif, tif->tif_dir.td_tilelength));
 }
-tmsize_t
-TIFFTileSize(TIFF* tif)
+tmsize_t TIFFTileSize(TIFF *tif)
 {
 	static const char module[] = "TIFFTileSize";
 	uint64 m;
@@ -268,14 +259,12 @@ TIFFTileSize(TIFF* tif)
  * request is <1 then we choose a size according
  * to certain heuristics.
  */
-void
-TIFFDefaultTileSize(TIFF* tif, uint32* tw, uint32* th)
+void TIFFDefaultTileSize(_Ptr<TIFF> tif, _Ptr<uint32> tw, _Ptr<uint32> th)
 {
 	(*tif->tif_deftilesize)(tif, tw, th);
 }
 
-void
-_TIFFDefaultTileSize(TIFF* tif, uint32* tw, uint32* th)
+void _TIFFDefaultTileSize(_Ptr<TIFF> tif, _Ptr<uint32> tw, _Ptr<uint32> th)
 {
 	(void) tif;
 	if (*(int32*) tw < 1)

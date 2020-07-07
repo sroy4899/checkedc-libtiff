@@ -32,30 +32,29 @@
 
 #define	PredictorState(tif)	((TIFFPredictorState*) (tif)->tif_data)
 
-static int horAcc8(TIFF* tif, uint8* cp0, tmsize_t cc);
-static int horAcc16(TIFF* tif, uint8* cp0, tmsize_t cc);
-static int horAcc32(TIFF* tif, uint8* cp0, tmsize_t cc);
-static int swabHorAcc16(TIFF* tif, uint8* cp0, tmsize_t cc);
-static int swabHorAcc32(TIFF* tif, uint8* cp0, tmsize_t cc);
-static int horDiff8(TIFF* tif, uint8* cp0, tmsize_t cc);
-static int horDiff16(TIFF* tif, uint8* cp0, tmsize_t cc);
-static int horDiff32(TIFF* tif, uint8* cp0, tmsize_t cc);
-static int swabHorDiff16(TIFF* tif, uint8* cp0, tmsize_t cc);
-static int swabHorDiff32(TIFF* tif, uint8* cp0, tmsize_t cc);
-static int fpAcc(TIFF* tif, uint8* cp0, tmsize_t cc);
-static int fpDiff(TIFF* tif, uint8* cp0, tmsize_t cc);
-static int PredictorDecodeRow(TIFF* tif, uint8* op0, tmsize_t occ0, uint16 s);
-static int PredictorDecodeTile(TIFF* tif, uint8* op0, tmsize_t occ0, uint16 s);
-static int PredictorEncodeRow(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s);
-static int PredictorEncodeTile(TIFF* tif, uint8* bp0, tmsize_t cc0, uint16 s);
+static int horAcc8(TIFF *tif, uint8 *cp0, tmsize_t cc);
+static int horAcc16(TIFF *tif, uint8 *cp0, tmsize_t cc);
+static int horAcc32(TIFF *tif, uint8 *cp0, tmsize_t cc);
+static int swabHorAcc16(TIFF *tif, uint8 *cp0, tmsize_t cc);
+static int swabHorAcc32(TIFF *tif, uint8 *cp0, tmsize_t cc);
+static int horDiff8(TIFF *tif, uint8 *cp0, tmsize_t cc);
+static int horDiff16(TIFF *tif, uint8 *cp0, tmsize_t cc);
+static int horDiff32(TIFF *tif, uint8 *cp0, tmsize_t cc);
+static int swabHorDiff16(TIFF *tif, uint8 *cp0, tmsize_t cc);
+static int swabHorDiff32(TIFF *tif, uint8 *cp0, tmsize_t cc);
+static int fpAcc(TIFF *tif, uint8 *cp0, tmsize_t cc);
+static int fpDiff(TIFF *tif, uint8 *cp0, tmsize_t cc);
+static int PredictorDecodeRow(TIFF *tif, uint8 *op0, tmsize_t occ0, uint16 s);
+static int PredictorDecodeTile(TIFF *tif, uint8 *op0, tmsize_t occ0, uint16 s);
+static int PredictorEncodeRow(TIFF *tif, uint8 *bp, tmsize_t cc, uint16 s);
+static int PredictorEncodeTile(TIFF *tif, uint8 *bp0, tmsize_t cc0, uint16 s);
 
-static int
-PredictorSetup(TIFF* tif)
+static int PredictorSetup(TIFF *tif)
 {
 	static const char module[] = "PredictorSetup";
 
 	TIFFPredictorState* sp = PredictorState(tif);
-	TIFFDirectory* td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 
 	switch (sp->predictor)		/* no differencing */
 	{
@@ -66,7 +65,7 @@ PredictorSetup(TIFF* tif)
 			    && td->td_bitspersample != 16
 			    && td->td_bitspersample != 32) {
 				TIFFErrorExt(tif->tif_clientdata, module,
-				    "Horizontal differencing \"Predictor\" not supported with %d-bit samples",
+				    ((const char *)"Horizontal differencing \"Predictor\" not supported with %d-bit samples"),
 				    td->td_bitspersample);
 				return 0;
 			}
@@ -74,7 +73,7 @@ PredictorSetup(TIFF* tif)
 		case PREDICTOR_FLOATINGPOINT:
 			if (td->td_sampleformat != SAMPLEFORMAT_IEEEFP) {
 				TIFFErrorExt(tif->tif_clientdata, module,
-				    "Floating point \"Predictor\" not supported with %d data format",
+				    ((const char *)"Floating point \"Predictor\" not supported with %d data format"),
 				    td->td_sampleformat);
 				return 0;
 			}
@@ -83,14 +82,14 @@ PredictorSetup(TIFF* tif)
                             && td->td_bitspersample != 32
                             && td->td_bitspersample != 64) { /* Should 64 be allowed? */
                                 TIFFErrorExt(tif->tif_clientdata, module,
-                                             "Floating point \"Predictor\" not supported with %d-bit samples",
+                                             ((const char *)"Floating point \"Predictor\" not supported with %d-bit samples"),
                                              td->td_bitspersample);
 				return 0;
                             }
 			break;
 		default:
 			TIFFErrorExt(tif->tif_clientdata, module,
-			    "\"Predictor\" value %d not supported",
+			    ((const char *)"\"Predictor\" value %d not supported"),
 			    sp->predictor);
 			return 0;
 	}
@@ -109,11 +108,10 @@ PredictorSetup(TIFF* tif)
 	return 1;
 }
 
-static int
-PredictorSetupDecode(TIFF* tif)
+static int PredictorSetupDecode(TIFF *tif)
 {
 	TIFFPredictorState* sp = PredictorState(tif);
-	TIFFDirectory* td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 
 	/* Note: when PredictorSetup() fails, the effets of setupdecode() */
 	/* will not be "cancelled" so setupdecode() might be robust to */
@@ -191,11 +189,10 @@ PredictorSetupDecode(TIFF* tif)
 	return 1;
 }
 
-static int
-PredictorSetupEncode(TIFF* tif)
+static int PredictorSetupEncode(TIFF *tif)
 {
 	TIFFPredictorState* sp = PredictorState(tif);
-	TIFFDirectory* td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 
 	if (!(*sp->setupencode)(tif) || !PredictorSetup(tif))
 		return 0;
@@ -284,8 +281,8 @@ horAcc8(TIFF* tif, uint8* cp0, tmsize_t cc)
 	unsigned char* cp = (unsigned char*) cp0;
     if((cc%stride)!=0)
     {
-        TIFFErrorExt(tif->tif_clientdata, "horAcc8",
-                     "%s", "(cc%stride)!=0");
+        TIFFErrorExt(tif->tif_clientdata, ((const char *)"horAcc8"),
+                     ((const char *)"%s"), "(cc%stride)!=0");
         return 0;
     }
 
@@ -333,8 +330,7 @@ horAcc8(TIFF* tif, uint8* cp0, tmsize_t cc)
 	return 1;
 }
 
-static int
-swabHorAcc16(TIFF* tif, uint8* cp0, tmsize_t cc)
+static int swabHorAcc16(TIFF *tif, uint8 *cp0, tmsize_t cc)
 {
 	uint16* wp = (uint16*) cp0;
 	tmsize_t wc = cc / 2;
@@ -353,8 +349,8 @@ horAcc16(TIFF* tif, uint8* cp0, tmsize_t cc)
 
     if((cc%(2*stride))!=0)
     {
-        TIFFErrorExt(tif->tif_clientdata, "horAcc16",
-                     "%s", "cc%(2*stride))!=0");
+        TIFFErrorExt(tif->tif_clientdata, ((const char *)"horAcc16"),
+                     ((const char *)"%s"), "cc%(2*stride))!=0");
         return 0;
     }
 
@@ -368,8 +364,7 @@ horAcc16(TIFF* tif, uint8* cp0, tmsize_t cc)
 	return 1;
 }
 
-static int
-swabHorAcc32(TIFF* tif, uint8* cp0, tmsize_t cc)
+static int swabHorAcc32(TIFF *tif, uint8 *cp0, tmsize_t cc)
 {
 	uint32* wp = (uint32*) cp0;
 	tmsize_t wc = cc / 4;
@@ -388,8 +383,8 @@ horAcc32(TIFF* tif, uint8* cp0, tmsize_t cc)
 
     if((cc%(4*stride))!=0)
     {
-        TIFFErrorExt(tif->tif_clientdata, "horAcc32",
-                     "%s", "cc%(4*stride))!=0");
+        TIFFErrorExt(tif->tif_clientdata, ((const char *)"horAcc32"),
+                     ((const char *)"%s"), "cc%(4*stride))!=0");
         return 0;
     }
 
@@ -406,8 +401,7 @@ horAcc32(TIFF* tif, uint8* cp0, tmsize_t cc)
 /*
  * Floating point predictor accumulation routine.
  */
-static int
-fpAcc(TIFF* tif, uint8* cp0, tmsize_t cc)
+static int fpAcc(TIFF *tif, uint8 *cp0, tmsize_t cc)
 {
 	tmsize_t stride = PredictorState(tif)->stride;
 	uint32 bps = tif->tif_dir.td_bitspersample / 8;
@@ -418,8 +412,8 @@ fpAcc(TIFF* tif, uint8* cp0, tmsize_t cc)
 
     if(cc%(bps*stride)!=0)
     {
-        TIFFErrorExt(tif->tif_clientdata, "fpAcc",
-                     "%s", "cc%(bps*stride))!=0");
+        TIFFErrorExt(tif->tif_clientdata, ((const char *)"fpAcc"),
+                     ((const char *)"%s"), "cc%(bps*stride))!=0");
         return 0;
     }
 
@@ -453,8 +447,7 @@ fpAcc(TIFF* tif, uint8* cp0, tmsize_t cc)
 /*
  * Decode a scanline and apply the predictor routine.
  */
-static int
-PredictorDecodeRow(TIFF* tif, uint8* op0, tmsize_t occ0, uint16 s)
+static int PredictorDecodeRow(TIFF *tif, uint8 *op0, tmsize_t occ0, uint16 s)
 {
 	TIFFPredictorState *sp = PredictorState(tif);
 
@@ -475,8 +468,7 @@ PredictorDecodeRow(TIFF* tif, uint8* op0, tmsize_t occ0, uint16 s)
  * been calculated at pre-decode time according to the
  * strip/tile dimensions.
  */
-static int
-PredictorDecodeTile(TIFF* tif, uint8* op0, tmsize_t occ0, uint16 s)
+static int PredictorDecodeTile(TIFF *tif, uint8 *op0, tmsize_t occ0, uint16 s)
 {
 	TIFFPredictorState *sp = PredictorState(tif);
 
@@ -488,8 +480,8 @@ PredictorDecodeTile(TIFF* tif, uint8* op0, tmsize_t occ0, uint16 s)
 		assert(rowsize > 0);
 		if((occ0%rowsize) !=0)
         {
-            TIFFErrorExt(tif->tif_clientdata, "PredictorDecodeTile",
-                         "%s", "occ0%rowsize != 0");
+            TIFFErrorExt(tif->tif_clientdata, ((const char *)"PredictorDecodeTile"),
+                         ((const char *)"%s"), "occ0%rowsize != 0");
             return 0;
         }
 		assert(sp->decodepfunc != NULL);
@@ -514,8 +506,8 @@ horDiff8(TIFF* tif, uint8* cp0, tmsize_t cc)
 
     if((cc%stride)!=0)
     {
-        TIFFErrorExt(tif->tif_clientdata, "horDiff8",
-                     "%s", "(cc%stride)!=0");
+        TIFFErrorExt(tif->tif_clientdata, ((const char *)"horDiff8"),
+                     ((const char *)"%s"), "(cc%stride)!=0");
         return 0;
     }
 
@@ -569,8 +561,8 @@ horDiff16(TIFF* tif, uint8* cp0, tmsize_t cc)
 
     if((cc%(2*stride))!=0)
     {
-        TIFFErrorExt(tif->tif_clientdata, "horDiff8",
-                     "%s", "(cc%(2*stride))!=0");
+        TIFFErrorExt(tif->tif_clientdata, ((const char *)"horDiff8"),
+                     ((const char *)"%s"), "(cc%(2*stride))!=0");
         return 0;
     }
 
@@ -585,8 +577,7 @@ horDiff16(TIFF* tif, uint8* cp0, tmsize_t cc)
 	return 1;
 }
 
-static int
-swabHorDiff16(TIFF* tif, uint8* cp0, tmsize_t cc)
+static int swabHorDiff16(TIFF *tif, uint8 *cp0, tmsize_t cc)
 {
     uint16* wp = (uint16*) cp0;
     tmsize_t wc = cc / 2;
@@ -609,8 +600,8 @@ horDiff32(TIFF* tif, uint8* cp0, tmsize_t cc)
 
     if((cc%(4*stride))!=0)
     {
-        TIFFErrorExt(tif->tif_clientdata, "horDiff32",
-                     "%s", "(cc%(4*stride))!=0");
+        TIFFErrorExt(tif->tif_clientdata, ((const char *)"horDiff32"),
+                     ((const char *)"%s"), "(cc%(4*stride))!=0");
         return 0;
     }
 
@@ -625,8 +616,7 @@ horDiff32(TIFF* tif, uint8* cp0, tmsize_t cc)
 	return 1;
 }
 
-static int
-swabHorDiff32(TIFF* tif, uint8* cp0, tmsize_t cc)
+static int swabHorDiff32(TIFF *tif, uint8 *cp0, tmsize_t cc)
 {
     uint32* wp = (uint32*) cp0;
     tmsize_t wc = cc / 4;
@@ -654,8 +644,8 @@ fpDiff(TIFF* tif, uint8* cp0, tmsize_t cc)
 
     if((cc%(bps*stride))!=0)
     {
-        TIFFErrorExt(tif->tif_clientdata, "fpDiff",
-                     "%s", "(cc%(bps*stride))!=0");
+        TIFFErrorExt(tif->tif_clientdata, ((const char *)"fpDiff"),
+                     ((const char *)"%s"), "(cc%(bps*stride))!=0");
         return 0;
     }
 
@@ -684,8 +674,7 @@ fpDiff(TIFF* tif, uint8* cp0, tmsize_t cc)
     return 1;
 }
 
-static int
-PredictorEncodeRow(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
+static int PredictorEncodeRow(TIFF *tif, uint8 *bp, tmsize_t cc, uint16 s)
 {
 	TIFFPredictorState *sp = PredictorState(tif);
 
@@ -699,8 +688,7 @@ PredictorEncodeRow(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
 	return (*sp->encoderow)(tif, bp, cc, s);
 }
 
-static int
-PredictorEncodeTile(TIFF* tif, uint8* bp0, tmsize_t cc0, uint16 s)
+static int PredictorEncodeTile(TIFF *tif, uint8 *bp0, tmsize_t cc0, uint16 s)
 {
 	static const char module[] = "PredictorEncodeTile";
 	TIFFPredictorState *sp = PredictorState(tif);
@@ -721,7 +709,7 @@ PredictorEncodeTile(TIFF* tif, uint8* bp0, tmsize_t cc0, uint16 s)
         if( working_copy == NULL )
         {
             TIFFErrorExt(tif->tif_clientdata, module, 
-                         "Out of memory allocating " TIFF_SSIZE_FORMAT " byte temp buffer.",
+                         ((const char *)"Out of memory allocating " TIFF_SSIZE_FORMAT " byte temp buffer."),
                          cc0 );
             return 0;
         }
@@ -732,8 +720,8 @@ PredictorEncodeTile(TIFF* tif, uint8* bp0, tmsize_t cc0, uint16 s)
 	assert(rowsize > 0);
 	if((cc0%rowsize)!=0)
     {
-        TIFFErrorExt(tif->tif_clientdata, "PredictorEncodeTile",
-                     "%s", "(cc0%rowsize)!=0");
+        TIFFErrorExt(tif->tif_clientdata, ((const char *)"PredictorEncodeTile"),
+                     ((const char *)"%s"), "(cc0%rowsize)!=0");
         _TIFFfree( working_copy );
         return 0;
     }
@@ -755,8 +743,7 @@ static const TIFFField predictFields[] = {
     { TIFFTAG_PREDICTOR, 1, 1, TIFF_SHORT, 0, TIFF_SETGET_UINT16, TIFF_SETGET_UINT16, FIELD_PREDICTOR, FALSE, FALSE, "Predictor", NULL },
 };
 
-static int
-PredictorVSetField(TIFF* tif, uint32 tag, va_list ap)
+static int PredictorVSetField(TIFF *tif, uint32 tag, va_list ap)
 {
 	TIFFPredictorState *sp = PredictorState(tif);
 
@@ -775,8 +762,7 @@ PredictorVSetField(TIFF* tif, uint32 tag, va_list ap)
 	return 1;
 }
 
-static int
-PredictorVGetField(TIFF* tif, uint32 tag, va_list ap)
+static int PredictorVGetField(TIFF *tif, uint32 tag, va_list ap)
 {
 	TIFFPredictorState *sp = PredictorState(tif);
 
@@ -793,27 +779,25 @@ PredictorVGetField(TIFF* tif, uint32 tag, va_list ap)
 	return 1;
 }
 
-static void
-PredictorPrintDir(TIFF* tif, FILE* fd, long flags)
+static void PredictorPrintDir(TIFF *tif, FILE *fd, long flags)
 {
 	TIFFPredictorState* sp = PredictorState(tif);
 
 	(void) flags;
 	if (TIFFFieldSet(tif,FIELD_PREDICTOR)) {
-		fprintf(fd, "  Predictor: ");
+		fprintf(fd, ((const char *)"  Predictor: "));
 		switch (sp->predictor) {
-			case 1: fprintf(fd, "none "); break;
-			case 2: fprintf(fd, "horizontal differencing "); break;
-			case 3: fprintf(fd, "floating point predictor "); break;
+			case 1: fprintf(fd, ((const char *)"none ")); break;
+			case 2: fprintf(fd, ((const char *)"horizontal differencing ")); break;
+			case 3: fprintf(fd, ((const char *)"floating point predictor ")); break;
 		}
-		fprintf(fd, "%d (0x%x)\n", sp->predictor, sp->predictor);
+		fprintf(fd, ((const char *)"%d (0x%x)\n"), sp->predictor, sp->predictor);
 	}
 	if (sp->printdir)
 		(*sp->printdir)(tif, fd, flags);
 }
 
-int
-TIFFPredictorInit(TIFF* tif)
+int TIFFPredictorInit(TIFF *tif)
 {
 	TIFFPredictorState* sp = PredictorState(tif);
 
@@ -824,8 +808,8 @@ TIFFPredictorInit(TIFF* tif)
 	 */
 	if (!_TIFFMergeFields(tif, predictFields,
 			      TIFFArrayCount(predictFields))) {
-		TIFFErrorExt(tif->tif_clientdata, "TIFFPredictorInit",
-		    "Merging Predictor codec-specific tags failed");
+		TIFFErrorExt(tif->tif_clientdata, ((const char *)"TIFFPredictorInit"),
+		    ((const char *)"Merging Predictor codec-specific tags failed"));
 		return 0;
 	}
 
@@ -853,8 +837,7 @@ TIFFPredictorInit(TIFF* tif)
 	return 1;
 }
 
-int
-TIFFPredictorCleanup(TIFF* tif)
+int TIFFPredictorCleanup(TIFF *tif)
 {
 	TIFFPredictorState* sp = PredictorState(tif);
 

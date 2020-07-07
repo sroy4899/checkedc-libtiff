@@ -44,28 +44,28 @@ typedef struct {
 	tmsize_t        stride;		/* sample stride over data */
 	tmsize_t        rowsize;	/* tile/strip row size */
 
-	TIFFCodeMethod  encoderow;	/* parent codec encode/decode row */
-	TIFFCodeMethod  encodestrip;	/* parent codec encode/decode strip */
-	TIFFCodeMethod  encodetile;	/* parent codec encode/decode tile */ 
-	TIFFEncodeDecodeMethod  encodepfunc;	/* horizontal differencer */
+	_Ptr<int (TIFF *, uint8 *, tmsize_t , uint16 )> encoderow;	/* parent codec encode/decode row */
+	_Ptr<int (TIFF *, uint8 *, tmsize_t , uint16 )> encodestrip;	/* parent codec encode/decode strip */
+	_Ptr<int (TIFF *, uint8 *, tmsize_t , uint16 )> encodetile;	/* parent codec encode/decode tile */ 
+	_Ptr<int (TIFF *, uint8 *, tmsize_t )> encodepfunc;	/* horizontal differencer */
 
-	TIFFCodeMethod  decoderow;	/* parent codec encode/decode row */
-	TIFFCodeMethod  decodestrip;	/* parent codec encode/decode strip */
-	TIFFCodeMethod  decodetile;	/* parent codec encode/decode tile */ 
-	TIFFEncodeDecodeMethod  decodepfunc;	/* horizontal accumulator */
+	_Ptr<int (TIFF *, uint8 *, tmsize_t , uint16 )> decoderow;	/* parent codec encode/decode row */
+	_Ptr<int (TIFF *, uint8 *, tmsize_t , uint16 )> decodestrip;	/* parent codec encode/decode strip */
+	_Ptr<int (TIFF *, uint8 *, tmsize_t , uint16 )> decodetile;	/* parent codec encode/decode tile */ 
+	_Ptr<int (TIFF *, uint8 *, tmsize_t )> decodepfunc;	/* horizontal accumulator */
 
-	TIFFVGetMethod  vgetparent;	/* super-class method */
-	TIFFVSetMethod  vsetparent;	/* super-class method */
-	TIFFPrintMethod printdir;	/* super-class method */
-	TIFFBoolMethod  setupdecode;	/* super-class method */
-	TIFFBoolMethod  setupencode;	/* super-class method */
+	_Ptr<int (TIFF *, uint32 , struct __va_list_tag *)> vgetparent;	/* super-class method */
+	_Ptr<int (TIFF *, uint32 , struct __va_list_tag *)> vsetparent;	/* super-class method */
+	_Ptr<void (TIFF *, FILE *, long )> printdir;	/* super-class method */
+	_Ptr<int (TIFF *)> setupdecode;	/* super-class method */
+	_Ptr<int (TIFF *)> setupencode;	/* super-class method */
 } TIFFPredictorState;
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-extern int TIFFPredictorInit(TIFF*);
-extern int TIFFPredictorCleanup(TIFF*);
+extern int TIFFPredictorInit(TIFF *);
+extern int TIFFPredictorCleanup(TIFF *);
 #if defined(__cplusplus)
 }
 #endif

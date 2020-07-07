@@ -41,8 +41,7 @@
  * @param tif A TIFF pointer.
  */
 
-void
-TIFFCleanup(TIFF* tif)
+void TIFFCleanup(TIFF *tif)
 {
 	/*
          * Flush buffered data and directory (if dirty).
@@ -81,7 +80,7 @@ TIFFCleanup(TIFF* tif)
 		for (i = 0; i < tif->tif_nfields; i++) {
 			TIFFField *fld = tif->tif_fields[i];
 			if (fld->field_bit == FIELD_CUSTOM &&
-			    strncmp("Tag ", fld->field_name, 4) == 0) {
+			    strncmp(((const char *)"Tag "), fld->field_name, 4) == 0) {
 				_TIFFfree(fld->field_name);
 				_TIFFfree(fld);
 			}
@@ -117,10 +116,9 @@ TIFFCleanup(TIFF* tif)
  * @param tif A TIFF pointer.
  */
 
-void
-TIFFClose(TIFF* tif)
+void TIFFClose(TIFF *tif)
 {
-	TIFFCloseProc closeproc = tif->tif_closeproc;
+	_Ptr<int (thandle_t )> closeproc =  tif->tif_closeproc;
 	thandle_t fd = tif->tif_clientdata;
 
 	TIFFCleanup(tif);

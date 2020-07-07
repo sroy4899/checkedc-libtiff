@@ -31,8 +31,7 @@
  */
 #include <stdio.h>
 
-static int
-PackBitsPreEncode(TIFF* tif, uint16 s)
+static int PackBitsPreEncode(TIFF *tif, uint16 s)
 {
 	(void) s;
 
@@ -49,8 +48,7 @@ PackBitsPreEncode(TIFF* tif, uint16 s)
 	return (1);
 }
 
-static int
-PackBitsPostEncode(TIFF* tif)
+static int PackBitsPostEncode(TIFF *tif)
 {
         if (tif->tif_data)
             _TIFFfree(tif->tif_data);
@@ -60,8 +58,7 @@ PackBitsPostEncode(TIFF* tif)
 /*
  * Encode a run of pixels.
  */
-static int
-PackBitsEncode(TIFF* tif, uint8* buf, tmsize_t cc, uint16 s)
+static int PackBitsEncode(TIFF *tif, uint8 *buf, tmsize_t cc, uint16 s)
 {
 	unsigned char* bp = (unsigned char*) buf;
 	uint8* op;
@@ -191,8 +188,7 @@ PackBitsEncode(TIFF* tif, uint8* buf, tmsize_t cc, uint16 s)
  * the decoder if data is read, for example, by scanlines
  * when it was encoded by strips.
  */
-static int
-PackBitsEncodeChunk(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
+static int PackBitsEncodeChunk(TIFF *tif, uint8 *bp, tmsize_t cc, uint16 s)
 {
 	tmsize_t rowsize = *(tmsize_t*)tif->tif_data;
 
@@ -210,8 +206,7 @@ PackBitsEncodeChunk(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
 	return (1);
 }
 
-static int
-PackBitsDecode(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
+static int PackBitsDecode(TIFF *tif, uint8 *op, tmsize_t occ, uint16 s)
 {
 	static const char module[] = "PackBitsDecode";
 	char *bp;
@@ -238,14 +233,14 @@ PackBitsDecode(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
 			if( occ < (tmsize_t)n )
 			{
 				TIFFWarningExt(tif->tif_clientdata, module,
-				    "Discarding %lu bytes to avoid buffer overrun",
+				    ((const char *)"Discarding %lu bytes to avoid buffer overrun"),
 				    (unsigned long) ((tmsize_t)n - occ));
 				n = (long)occ;
 			}
 			if( cc == 0 )
 			{
 				TIFFWarningExt(tif->tif_clientdata, module,
-					       "Terminating PackBitsDecode due to lack of data.");
+					       ((const char *)"Terminating PackBitsDecode due to lack of data."));
 				break;
 			}
 			occ -= n;
@@ -257,14 +252,14 @@ PackBitsDecode(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
 			if (occ < (tmsize_t)(n + 1))
 			{
 				TIFFWarningExt(tif->tif_clientdata, module,
-				    "Discarding %lu bytes to avoid buffer overrun",
+				    ((const char *)"Discarding %lu bytes to avoid buffer overrun"),
 				    (unsigned long) ((tmsize_t)n - occ + 1));
 				n = (long)occ - 1;
 			}
 			if (cc < (tmsize_t) (n+1)) 
 			{
 				TIFFWarningExt(tif->tif_clientdata, module,
-					       "Terminating PackBitsDecode due to lack of data.");
+					       ((const char *)"Terminating PackBitsDecode due to lack of data."));
 				break;
 			}
 			_TIFFmemcpy(op, bp, ++n);
@@ -276,15 +271,14 @@ PackBitsDecode(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
 	tif->tif_rawcc = cc;
 	if (occ > 0) {
 		TIFFErrorExt(tif->tif_clientdata, module,
-		    "Not enough data for scanline %lu",
+		    ((const char *)"Not enough data for scanline %lu"),
 		    (unsigned long) tif->tif_row);
 		return (0);
 	}
 	return (1);
 }
 
-int
-TIFFInitPackBits(TIFF* tif, int scheme)
+int TIFFInitPackBits(TIFF *tif, int scheme)
 {
 	(void) scheme;
 	tif->tif_decoderow = PackBitsDecode;

@@ -32,18 +32,17 @@
 /*
  * Compute which strip a (row,sample) value is in.
  */
-uint32
-TIFFComputeStrip(TIFF* tif, uint32 row, uint16 sample)
+uint32 TIFFComputeStrip(TIFF *tif : itype(_Ptr<TIFF>), uint32 row, uint16 sample)
 {
 	static const char module[] = "TIFFComputeStrip";
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	uint32 strip;
 
 	strip = row / td->td_rowsperstrip;
 	if (td->td_planarconfig == PLANARCONFIG_SEPARATE) {
 		if (sample >= td->td_samplesperpixel) {
 			TIFFErrorExt(tif->tif_clientdata, module,
-			    "%lu: Sample out of range, max %lu",
+			    ((const char *)"%lu: Sample out of range, max %lu"),
 			    (unsigned long) sample, (unsigned long) td->td_samplesperpixel);
 			return (0);
 		}
@@ -55,28 +54,26 @@ TIFFComputeStrip(TIFF* tif, uint32 row, uint16 sample)
 /*
  * Compute how many strips are in an image.
  */
-uint32
-TIFFNumberOfStrips(TIFF* tif)
+uint32 TIFFNumberOfStrips(TIFF *tif : itype(_Ptr<TIFF>))
 {
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	uint32 nstrips;
 
 	nstrips = (td->td_rowsperstrip == (uint32) -1 ? 1 :
 	     TIFFhowmany_32(td->td_imagelength, td->td_rowsperstrip));
 	if (td->td_planarconfig == PLANARCONFIG_SEPARATE)
 		nstrips = _TIFFMultiply32(tif, nstrips, (uint32)td->td_samplesperpixel,
-		    "TIFFNumberOfStrips");
+		    ((const char *)"TIFFNumberOfStrips"));
 	return (nstrips);
 }
 
 /*
  * Compute the # bytes in a variable height, row-aligned strip.
  */
-uint64
-TIFFVStripSize64(TIFF* tif, uint32 nrows)
+uint64 TIFFVStripSize64(TIFF *tif, uint32 nrows)
 {
 	static const char module[] = "TIFFVStripSize64";
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	if (nrows==(uint32)(-1))
 		nrows=td->td_imagelength;
 	if ((td->td_planarconfig==PLANARCONFIG_CONTIG)&&
@@ -100,7 +97,7 @@ TIFFVStripSize64(TIFF* tif, uint32 nrows)
 		if(td->td_samplesperpixel!=3)
 		{
 			TIFFErrorExt(tif->tif_clientdata,module,
-			    "Invalid td_samplesperpixel value");
+			    ((const char *)"Invalid td_samplesperpixel value"));
 			return 0;
 		}
 		TIFFGetFieldDefaulted(tif,TIFFTAG_YCBCRSUBSAMPLING,ycbcrsubsampling+0,
@@ -109,7 +106,7 @@ TIFFVStripSize64(TIFF* tif, uint32 nrows)
 		    ||(ycbcrsubsampling[1] != 1 && ycbcrsubsampling[1] != 2 && ycbcrsubsampling[1] != 4))
 		{
 			TIFFErrorExt(tif->tif_clientdata,module,
-				     "Invalid YCbCr subsampling (%dx%d)", 
+				     ((const char *)"Invalid YCbCr subsampling (%dx%d)"), 
 				     ycbcrsubsampling[0], 
 				     ycbcrsubsampling[1] );
 			return 0;
@@ -124,8 +121,7 @@ TIFFVStripSize64(TIFF* tif, uint32 nrows)
 	else
 		return(_TIFFMultiply64(tif,nrows,TIFFScanlineSize64(tif),module));
 }
-tmsize_t
-TIFFVStripSize(TIFF* tif, uint32 nrows)
+tmsize_t TIFFVStripSize(TIFF *tif, uint32 nrows)
 {
 	static const char module[] = "TIFFVStripSize";
 	uint64 m;
@@ -136,8 +132,7 @@ TIFFVStripSize(TIFF* tif, uint32 nrows)
 /*
  * Compute the # bytes in a raw strip.
  */
-uint64
-TIFFRawStripSize64(TIFF* tif, uint32 strip)
+uint64 TIFFRawStripSize64(TIFF *tif, uint32 strip)
 {
 	static const char module[] = "TIFFRawStripSize64";
 	uint64 bytecount = TIFFGetStrileByteCount(tif, strip);
@@ -151,7 +146,7 @@ TIFFRawStripSize64(TIFF* tif, uint32 strip)
 			     (unsigned long) strip);
 #else
 		TIFFErrorExt(tif->tif_clientdata, module,
-			     "%llu: Invalid strip byte count, strip %lu",
+			     ((const char *)"%llu: Invalid strip byte count, strip %lu"),
 			     (unsigned long long) bytecount,
 			     (unsigned long) strip);
 #endif
@@ -160,8 +155,7 @@ TIFFRawStripSize64(TIFF* tif, uint32 strip)
 
 	return bytecount;
 }
-tmsize_t
-TIFFRawStripSize(TIFF* tif, uint32 strip)
+tmsize_t TIFFRawStripSize(TIFF *tif, uint32 strip)
 {
 	static const char module[] = "TIFFRawStripSize";
 	uint64 m;
@@ -174,7 +168,7 @@ TIFFRawStripSize(TIFF* tif, uint32 strip)
 		n=(tmsize_t)m;
 		if ((uint64)n!=m)
 		{
-			TIFFErrorExt(tif->tif_clientdata,module,"Integer overflow");
+			TIFFErrorExt(tif->tif_clientdata,module,((const char *)"Integer overflow"));
 			n=0;
 		}
 	}
@@ -189,17 +183,15 @@ TIFFRawStripSize(TIFF* tif, uint32 strip)
  * truncated to reflect the actual space required
  * to hold the strip.
  */
-uint64
-TIFFStripSize64(TIFF* tif)
+uint64 TIFFStripSize64(TIFF *tif)
 {
-	TIFFDirectory* td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	uint32 rps = td->td_rowsperstrip;
 	if (rps > td->td_imagelength)
 		rps = td->td_imagelength;
 	return (TIFFVStripSize64(tif, rps));
 }
-tmsize_t
-TIFFStripSize(TIFF* tif)
+tmsize_t TIFFStripSize(TIFF *tif)
 {
 	static const char module[] = "TIFFStripSize";
 	uint64 m;
@@ -213,14 +205,12 @@ TIFFStripSize(TIFF* tif)
  * request is <1 then we choose a strip size according
  * to certain heuristics.
  */
-uint32
-TIFFDefaultStripSize(TIFF* tif, uint32 request)
+uint32 TIFFDefaultStripSize(TIFF *tif, uint32 request)
 {
 	return (*tif->tif_defstripsize)(tif, request);
 }
 
-uint32
-_TIFFDefaultStripSize(TIFF* tif, uint32 s)
+uint32 _TIFFDefaultStripSize(TIFF *tif, uint32 s)
 {
 	if ((int32) s < 1) {
 		/*
@@ -253,11 +243,10 @@ _TIFFDefaultStripSize(TIFF* tif, uint32 s)
  * subsampling lines divided by vertical subsampling. It should thus make
  * sense when multiplied by a multiple of vertical subsampling.
  */
-uint64
-TIFFScanlineSize64(TIFF* tif)
+uint64 TIFFScanlineSize64(TIFF *tif)
 {
 	static const char module[] = "TIFFScanlineSize64";
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	uint64 scanline_size;
 	if (td->td_planarconfig==PLANARCONFIG_CONTIG)
 	{
@@ -273,7 +262,7 @@ TIFFScanlineSize64(TIFF* tif)
 			if(td->td_samplesperpixel!=3)
 			{
                             TIFFErrorExt(tif->tif_clientdata,module,
-                                         "Invalid td_samplesperpixel value");
+                                         ((const char *)"Invalid td_samplesperpixel value"));
                             return 0;
 			}
 			TIFFGetFieldDefaulted(tif,TIFFTAG_YCBCRSUBSAMPLING,
@@ -283,7 +272,7 @@ TIFFScanlineSize64(TIFF* tif)
 			    ((ycbcrsubsampling[1]!=1)&&(ycbcrsubsampling[1]!=2)&&(ycbcrsubsampling[1]!=4)))
 			{
                             TIFFErrorExt(tif->tif_clientdata,module,
-                                         "Invalid YCbCr subsampling");
+                                         ((const char *)"Invalid YCbCr subsampling"));
                             return 0;
 			}
 			samplingblock_samples = ycbcrsubsampling[0]*ycbcrsubsampling[1]+2;
@@ -305,13 +294,12 @@ TIFFScanlineSize64(TIFF* tif)
         }
         if (scanline_size == 0)
         {
-                TIFFErrorExt(tif->tif_clientdata,module,"Computed scanline size is zero");
+                TIFFErrorExt(tif->tif_clientdata,module,((const char *)"Computed scanline size is zero"));
                 return 0;
         }
 	return(scanline_size);
 }
-tmsize_t
-TIFFScanlineSize(TIFF* tif)
+tmsize_t TIFFScanlineSize(TIFF *tif)
 {
 	static const char module[] = "TIFFScanlineSize";
 	uint64 m;
@@ -325,11 +313,10 @@ TIFFScanlineSize(TIFF* tif)
  * I/O size returned by TIFFScanlineSize which may be less
  * if data is store as separate planes).
  */
-uint64
-TIFFRasterScanlineSize64(TIFF* tif)
+uint64 TIFFRasterScanlineSize64(_Ptr<TIFF> tif)
 {
 	static const char module[] = "TIFFRasterScanlineSize64";
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	uint64 scanline;
 
 	scanline = _TIFFMultiply64(tif, td->td_bitspersample, td->td_imagewidth, module);
@@ -340,8 +327,7 @@ TIFFRasterScanlineSize64(TIFF* tif)
 		return (_TIFFMultiply64(tif, TIFFhowmany8_64(scanline),
 		    td->td_samplesperpixel, module));
 }
-tmsize_t
-TIFFRasterScanlineSize(TIFF* tif)
+tmsize_t TIFFRasterScanlineSize(_Ptr<TIFF> tif)
 {
 	static const char module[] = "TIFFRasterScanlineSize";
 	uint64 m;

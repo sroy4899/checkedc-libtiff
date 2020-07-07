@@ -65,15 +65,14 @@ static const int threebitdeltas[8] = { 0, 1, 2, 3, 0, -3, -2, -1 };
         }                                     \
 }
 
-static int
-ThunderSetupDecode(TIFF* tif)
+static int ThunderSetupDecode(TIFF *tif)
 {
 	static const char module[] = "ThunderSetupDecode";
 
         if( tif->tif_dir.td_bitspersample != 4 )
         {
                 TIFFErrorExt(tif->tif_clientdata, module,
-                             "Wrong bitspersample value (%d), Thunder decoder only supports 4bits per sample.",
+                             ((const char *)"Wrong bitspersample value (%d), Thunder decoder only supports 4bits per sample."),
                              (int) tif->tif_dir.td_bitspersample );
                 return 0;
         }
@@ -82,8 +81,7 @@ ThunderSetupDecode(TIFF* tif)
 	return (1);
 }
 
-static int
-ThunderDecode(TIFF* tif, uint8* op, tmsize_t maxpixels)
+static int ThunderDecode(TIFF *tif, uint8 *op, tmsize_t maxpixels)
 {
 	static const char module[] = "ThunderDecode";
 	register unsigned char *bp;
@@ -151,7 +149,7 @@ ThunderDecode(TIFF* tif, uint8* op, tmsize_t maxpixels)
 			     (unsigned __int64) maxpixels);
 #else
 		TIFFErrorExt(tif->tif_clientdata, module,
-			     "%s data at scanline %lu (%llu != %llu)",
+			     ((const char *)"%s data at scanline %lu (%llu != %llu)"),
 			     npixels < maxpixels ? "Not enough" : "Too much",
 			     (unsigned long) tif->tif_row,
 			     (unsigned long long) npixels,
@@ -163,8 +161,7 @@ ThunderDecode(TIFF* tif, uint8* op, tmsize_t maxpixels)
         return (1);
 }
 
-static int
-ThunderDecodeRow(TIFF* tif, uint8* buf, tmsize_t occ, uint16 s)
+static int ThunderDecodeRow(TIFF *tif, uint8 *buf, tmsize_t occ, uint16 s)
 {
 	static const char module[] = "ThunderDecodeRow";
 	uint8* row = buf;
@@ -172,7 +169,7 @@ ThunderDecodeRow(TIFF* tif, uint8* buf, tmsize_t occ, uint16 s)
 	(void) s;
 	if (occ % tif->tif_scanlinesize)
 	{
-		TIFFErrorExt(tif->tif_clientdata, module, "Fractional scanlines cannot be read");
+		TIFFErrorExt(tif->tif_clientdata, module, ((const char *)"Fractional scanlines cannot be read"));
 		return (0);
 	}
 	while (occ > 0) {
@@ -184,8 +181,7 @@ ThunderDecodeRow(TIFF* tif, uint8* buf, tmsize_t occ, uint16 s)
 	return (1);
 }
 
-int
-TIFFInitThunderScan(TIFF* tif, int scheme)
+int TIFFInitThunderScan(TIFF *tif, int scheme)
 {
 	(void) scheme;
 
