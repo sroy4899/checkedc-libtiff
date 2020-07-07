@@ -3,7 +3,17 @@
 import json
 import os
 
-pwd = os.getcwd()
+basedir = ""
+pwd_start = os.getcwd()
+
+with open("convert_all.sh", 'r') as f: 
+    for line in f.readlines():
+        if "BASEDIR=" in line: 
+            basedir = line.rstrip().split("BASEDIR=")[1] 
+
+os.chdir(basedir)
+pwd = os.getcwd() 
+os.chdir(pwd_start)
 
 with open('compile_commands.json', 'r') as f:
     database = json.loads(f.read())
