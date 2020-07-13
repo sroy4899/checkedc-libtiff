@@ -30,8 +30,7 @@
 #include "tiffiop.h"
 
 #if defined(DISABLE_CHECK_TIFFSWABMACROS) || !defined(TIFFSwabShort)
-void
-TIFFSwabShort(uint16* wp)
+void TIFFSwabShort(uint16 *wp)
 {
 	register unsigned char* cp = (unsigned char*) wp;
 	unsigned char t;
@@ -41,8 +40,7 @@ TIFFSwabShort(uint16* wp)
 #endif
 
 #if defined(DISABLE_CHECK_TIFFSWABMACROS) || !defined(TIFFSwabLong)
-void
-TIFFSwabLong(uint32* lp)
+void TIFFSwabLong(uint32 *lp)
 {
 	register unsigned char* cp = (unsigned char*) lp;
 	unsigned char t;
@@ -53,8 +51,7 @@ TIFFSwabLong(uint32* lp)
 #endif
 
 #if defined(DISABLE_CHECK_TIFFSWABMACROS) || !defined(TIFFSwabLong8)
-void
-TIFFSwabLong8(uint64* lp)
+void TIFFSwabLong8(uint64 *lp)
 {
 	register unsigned char* cp = (unsigned char*) lp;
 	unsigned char t;
@@ -67,8 +64,7 @@ TIFFSwabLong8(uint64* lp)
 #endif
 
 #if defined(DISABLE_CHECK_TIFFSWABMACROS) || !defined(TIFFSwabArrayOfShort)
-void
-TIFFSwabArrayOfShort(register uint16* wp, tmsize_t n)
+void TIFFSwabArrayOfShort(register uint16 *wp, tmsize_t n)
 {
 	register unsigned char* cp;
 	register unsigned char t;
@@ -83,10 +79,9 @@ TIFFSwabArrayOfShort(register uint16* wp, tmsize_t n)
 #endif
 
 #if defined(DISABLE_CHECK_TIFFSWABMACROS) || !defined(TIFFSwabArrayOfTriples)
-void
-TIFFSwabArrayOfTriples(register uint8* tp, tmsize_t n)
+void TIFFSwabArrayOfTriples(_Array_ptr<uint8> tp : count(n), tmsize_t n)
 {
-	unsigned char* cp;
+	_Array_ptr<unsigned char> cp : count(n) = ((void *)0);
 	unsigned char t;
 
 	/* XXX unroll loop some */
@@ -99,8 +94,7 @@ TIFFSwabArrayOfTriples(register uint8* tp, tmsize_t n)
 #endif
 
 #if defined(DISABLE_CHECK_TIFFSWABMACROS) || !defined(TIFFSwabArrayOfLong)
-void
-TIFFSwabArrayOfLong(register uint32* lp, tmsize_t n)
+void TIFFSwabArrayOfLong(register uint32 *lp, tmsize_t n)
 {
 	register unsigned char *cp;
 	register unsigned char t;
@@ -116,8 +110,7 @@ TIFFSwabArrayOfLong(register uint32* lp, tmsize_t n)
 #endif
 
 #if defined(DISABLE_CHECK_TIFFSWABMACROS) || !defined(TIFFSwabArrayOfLong8)
-void
-TIFFSwabArrayOfLong8(register uint64* lp, tmsize_t n)
+void TIFFSwabArrayOfLong8(register uint64 *lp, tmsize_t n)
 {
 	register unsigned char *cp;
 	register unsigned char t;
@@ -135,8 +128,7 @@ TIFFSwabArrayOfLong8(register uint64* lp, tmsize_t n)
 #endif
 
 #if defined(DISABLE_CHECK_TIFFSWABMACROS) || !defined(TIFFSwabFloat)
-void
-TIFFSwabFloat(float* fp)
+void TIFFSwabFloat(float *fp)
 {
 	register unsigned char* cp = (unsigned char*) fp;
 	unsigned char t;
@@ -147,8 +139,7 @@ TIFFSwabFloat(float* fp)
 #endif
 
 #if defined(DISABLE_CHECK_TIFFSWABMACROS) || !defined(TIFFSwabArrayOfFloat)
-void
-TIFFSwabArrayOfFloat(register float* fp, tmsize_t n)
+void TIFFSwabArrayOfFloat(register float *fp, tmsize_t n)
 {
 	register unsigned char *cp;
 	register unsigned char t;
@@ -164,8 +155,7 @@ TIFFSwabArrayOfFloat(register float* fp, tmsize_t n)
 #endif
 
 #if defined(DISABLE_CHECK_TIFFSWABMACROS) || !defined(TIFFSwabDouble)
-void
-TIFFSwabDouble(double *dp)
+void TIFFSwabDouble(double *dp)
 {
 	register unsigned char* cp = (unsigned char*) dp;
 	unsigned char t;
@@ -178,8 +168,7 @@ TIFFSwabDouble(double *dp)
 #endif
 
 #if defined(DISABLE_CHECK_TIFFSWABMACROS) || !defined(TIFFSwabArrayOfDouble)
-void
-TIFFSwabArrayOfDouble(double* dp, tmsize_t n)
+void TIFFSwabArrayOfDouble(double *dp, tmsize_t n)
 {
 	register unsigned char *cp;
 	register unsigned char t;
@@ -205,7 +194,7 @@ TIFFSwabArrayOfDouble(double* dp, tmsize_t n)
  * for algorithms that want an equivalent table that
  * do not reverse bit values.
  */
-static const unsigned char TIFFBitRevTable[256] = {
+static const unsigned char TIFFBitRevTable _Checked[256] =  {
     0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,
     0x10, 0x90, 0x50, 0xd0, 0x30, 0xb0, 0x70, 0xf0,
     0x08, 0x88, 0x48, 0xc8, 0x28, 0xa8, 0x68, 0xe8,
@@ -239,7 +228,7 @@ static const unsigned char TIFFBitRevTable[256] = {
     0x0f, 0x8f, 0x4f, 0xcf, 0x2f, 0xaf, 0x6f, 0xef,
     0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff
 };
-static const unsigned char TIFFNoBitRevTable[256] = {
+static const unsigned char TIFFNoBitRevTable _Checked[256] =  {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 
     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 
     0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 
@@ -274,14 +263,12 @@ static const unsigned char TIFFNoBitRevTable[256] = {
     0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff, 
 };
 
-const unsigned char*
-TIFFGetBitRevTable(int reversed)
+const unsigned char *TIFFGetBitRevTable(int reversed) : itype(_Array_ptr<const unsigned char>)
 {
 	return (reversed ? TIFFBitRevTable : TIFFNoBitRevTable);
 }
 
-void
-TIFFReverseBits(uint8* cp, tmsize_t n)  
+void TIFFReverseBits(uint8 *cp : itype(_Array_ptr<uint8>) count(n), tmsize_t n)  
 {
 	for (; n > 8; n -= 8) {
 		cp[0] = TIFFBitRevTable[cp[0]];

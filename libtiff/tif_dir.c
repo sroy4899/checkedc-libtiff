@@ -38,8 +38,7 @@
 #define DATATYPE_UINT		2       /* !unsigned integer data */
 #define DATATYPE_IEEEFP		3       /* !IEEE floating point data */
 
-static void
-setByteArray(void** vpp, void* vp, size_t nmemb, size_t elem_size)
+static void setByteArray(void **vpp, void *vp, size_t nmemb, size_t elem_size)
 {
 	if (*vpp) {
 		_TIFFfree(*vpp);
@@ -53,25 +52,24 @@ setByteArray(void** vpp, void* vp, size_t nmemb, size_t elem_size)
 			_TIFFmemcpy(*vpp, vp, bytes);
 	}
 }
-void _TIFFsetByteArray(void** vpp, void* vp, uint32 n)
+void _TIFFsetByteArray(void **vpp, void *vp, uint32 n)
     { setByteArray(vpp, vp, n, 1); }
-void _TIFFsetString(char** cpp, char* cp)
+void _TIFFsetString(char **cpp, char *cp)
     { setByteArray((void**) cpp, (void*) cp, strlen(cp)+1, 1); }
-static void _TIFFsetNString(char** cpp, char* cp, uint32 n)
+static void _TIFFsetNString(char **cpp, char *cp, uint32 n)
     { setByteArray((void**) cpp, (void*) cp, n, 1); }
-void _TIFFsetShortArray(uint16** wpp, uint16* wp, uint32 n)
+void _TIFFsetShortArray(uint16 **wpp, uint16 *wp, uint32 n)
     { setByteArray((void**) wpp, (void*) wp, n, sizeof (uint16)); }
-void _TIFFsetLongArray(uint32** lpp, uint32* lp, uint32 n)
+void _TIFFsetLongArray(uint32 **lpp, uint32 *lp, uint32 n)
     { setByteArray((void**) lpp, (void*) lp, n, sizeof (uint32)); }
-static void _TIFFsetLong8Array(uint64** lpp, uint64* lp, uint32 n)
+static void _TIFFsetLong8Array(uint64 **lpp, uint64 *lp, uint32 n)
     { setByteArray((void**) lpp, (void*) lp, n, sizeof (uint64)); }
-void _TIFFsetFloatArray(float** fpp, float* fp, uint32 n)
+void _TIFFsetFloatArray(float **fpp, float *fp, uint32 n)
     { setByteArray((void**) fpp, (void*) fp, n, sizeof (float)); }
-void _TIFFsetDoubleArray(double** dpp, double* dp, uint32 n)
+void _TIFFsetDoubleArray(double **dpp, double *dp, uint32 n)
     { setByteArray((void**) dpp, (void*) dp, n, sizeof (double)); }
 
-static void
-setDoubleArrayOneValue(double** vpp, double value, size_t nmemb)
+static void setDoubleArrayOneValue(_Ptr<double*> vpp, double value, size_t nmemb)
 {
 	if (*vpp)
 		_TIFFfree(*vpp);
@@ -86,15 +84,14 @@ setDoubleArrayOneValue(double** vpp, double value, size_t nmemb)
 /*
  * Install extra samples information.
  */
-static int
-setExtraSamples(TIFF* tif, va_list ap, uint32* v)
+static int setExtraSamples(TIFF *tif, va_list ap, _Ptr<uint32> v)
 {
 /* XXX: Unassociated alpha data == 999 is a known Corel Draw bug, see below */
 #define EXTRASAMPLE_COREL_UNASSALPHA 999 
 
 	uint16* va;
 	uint32 i;
-        TIFFDirectory* td = &tif->tif_dir;
+        _Ptr<TIFFDirectory> td =  &tif->tif_dir;
         static const char module[] = "setExtraSamples";
 
 	*v = (uint16) va_arg(ap, uint16_vap);
@@ -140,15 +137,14 @@ setExtraSamples(TIFF* tif, va_list ap, uint32* v)
  * Confirm we have "samplesperpixel" ink names separated by \0.  Returns 
  * zero if the ink names are not as expected.
  */
-static uint32
-checkInkNamesString(TIFF* tif, uint32 slen, const char* s)
+static uint32 checkInkNamesString(TIFF *tif, uint32 slen, const char *s : itype(_Array_ptr<const char>) count(slen))
 {
-	TIFFDirectory* td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	uint16 i = td->td_samplesperpixel;
 
 	if (slen > 0) {
-		const char* ep = s+slen;
-		const char* cp = s;
+		_Ptr<const char> ep =  s+slen;
+		_Array_ptr<const char> cp =  s;
 		for (; i > 0; i--) {
 			for (; cp < ep && *cp != '\0'; cp++) {}
 			if (cp >= ep)
@@ -166,12 +162,11 @@ bad:
 	return (0);
 }
 
-static int
-_TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
+static int _TIFFVSetField(TIFF *tif, uint32 tag, va_list ap)
 {
 	static const char module[] = "_TIFFVSetField";
 
-	TIFFDirectory* td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	int status = 1;
 	uint32 v32, i, v;
     double dblval;
@@ -770,8 +765,7 @@ badvaluedouble:
  * has commenced, unless its value has no effect
  * on the format of the data that is written.
  */
-static int
-OkToChangeTag(TIFF* tif, uint32 tag)
+static int OkToChangeTag(TIFF *tif, uint32 tag)
 {
 	const TIFFField* fip = TIFFFindField(tif, tag, TIFF_ANY);
 	if (!fip) {			/* unknown tag */
@@ -802,8 +796,7 @@ OkToChangeTag(TIFF* tif, uint32 tag)
  * when/if the directory structure is
  * updated.
  */
-int
-TIFFSetField(TIFF* tif, uint32 tag, ...)
+int TIFFSetField(TIFF *tif, uint32 tag, ...)
 {
 	va_list ap;
 	int status;
@@ -817,11 +810,10 @@ TIFFSetField(TIFF* tif, uint32 tag, ...)
 /*
  * Clear the contents of the field in the internal structure.
  */
-int
-TIFFUnsetField(TIFF* tif, uint32 tag)
+int TIFFUnsetField(TIFF *tif, uint32 tag)
 {
     const TIFFField *fip =  TIFFFieldWithTag(tif, tag);
-    TIFFDirectory* td = &tif->tif_dir;
+    _Ptr<TIFFDirectory> td =  &tif->tif_dir;
 
     if( !fip )
         return 0;
@@ -861,17 +853,15 @@ TIFFUnsetField(TIFF* tif, uint32 tag)
  * for building higher-level interfaces on
  * top of the library.
  */
-int
-TIFFVSetField(TIFF* tif, uint32 tag, va_list ap)
+int TIFFVSetField(TIFF *tif, uint32 tag, va_list ap)
 {
 	return OkToChangeTag(tif, tag) ?
 	    (*tif->tif_tagmethods.vsetfield)(tif, tag, ap) : 0;
 }
 
-static int
-_TIFFVGetField(TIFF* tif, uint32 tag, va_list ap)
+static int _TIFFVGetField(TIFF *tif, uint32 tag, va_list ap)
 {
-	TIFFDirectory* td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	int ret_val = 1;
 	uint32 standard_tag = tag;
 	const TIFFField* fip = TIFFFindField(tif, tag, TIFF_ANY);
@@ -1227,8 +1217,7 @@ _TIFFVGetField(TIFF* tif, uint32 tag, va_list ap)
  * Return the value of a field in the
  * internal directory structure.
  */
-int
-TIFFGetField(TIFF* tif, uint32 tag, ...)
+int TIFFGetField(TIFF *tif, uint32 tag, ...)
 {
 	int status;
 	va_list ap;
@@ -1245,8 +1234,7 @@ TIFFGetField(TIFF* tif, uint32 tag, ...)
  * for building higher-level interfaces on
  * top of the library.
  */
-int
-TIFFVGetField(TIFF* tif, uint32 tag, va_list ap)
+int TIFFVGetField(TIFF *tif, uint32 tag, va_list ap)
 {
 	const TIFFField* fip = TIFFFindField(tif, tag, TIFF_ANY);
 	return (fip && (isPseudoTag(tag) || TIFFFieldSet(tif, fip->field_bit)) ?
@@ -1263,10 +1251,9 @@ TIFFVGetField(TIFF* tif, uint32 tag, va_list ap)
 /*
  * Release storage associated with a directory.
  */
-void
-TIFFFreeDirectory(TIFF* tif)
+void TIFFFreeDirectory(TIFF *tif : itype(_Ptr<TIFF>))
 {
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	int            i;
 
 	_TIFFmemset(td->td_fieldsset, 0, FIELD_SETLONGS);
@@ -1307,8 +1294,7 @@ TIFFFreeDirectory(TIFF* tif)
  */
 static TIFFExtendProc _TIFFextender = (TIFFExtendProc) NULL;
 
-TIFFExtendProc
-TIFFSetTagExtender(TIFFExtendProc extender)
+TIFFExtendProc TIFFSetTagExtender(TIFFExtendProc extender)
 {
 	TIFFExtendProc prev = _TIFFextender;
 	_TIFFextender = extender;
@@ -1322,8 +1308,7 @@ TIFFSetTagExtender(TIFFExtendProc extender)
  * The newly created directory will not exist on the file till
  * TIFFWriteDirectory(), TIFFFlush() or TIFFClose() is called.
  */
-int
-TIFFCreateDirectory(TIFF* tif)
+int TIFFCreateDirectory(TIFF *tif)
 {
 	TIFFDefaultDirectory(tif);
 	tif->tif_diroff = 0;
@@ -1335,8 +1320,7 @@ TIFFCreateDirectory(TIFF* tif)
 	return 0;
 }
 
-int
-TIFFCreateCustomDirectory(TIFF* tif, const TIFFFieldArray* infoarray)
+int TIFFCreateCustomDirectory(TIFF *tif, _Ptr<const TIFFFieldArray> infoarray)
 {
 	TIFFDefaultDirectory(tif);
 
@@ -1356,10 +1340,9 @@ TIFFCreateCustomDirectory(TIFF* tif, const TIFFFieldArray* infoarray)
 	return 0;
 }
 
-int
-TIFFCreateEXIFDirectory(TIFF* tif)
+int TIFFCreateEXIFDirectory(TIFF *tif)
 {
-	const TIFFFieldArray* exifFieldArray;
+	_Ptr<const TIFFFieldArray> exifFieldArray = ((void *)0);
 	exifFieldArray = _TIFFGetExifFields();
 	return TIFFCreateCustomDirectory(tif, exifFieldArray);
 }
@@ -1367,11 +1350,10 @@ TIFFCreateEXIFDirectory(TIFF* tif)
 /*
  * Setup a default directory structure.
  */
-int
-TIFFDefaultDirectory(TIFF* tif)
+int TIFFDefaultDirectory(TIFF *tif)
 {
 	register TIFFDirectory* td = &tif->tif_dir;
-	const TIFFFieldArray* tiffFieldArray;
+	_Ptr<const TIFFFieldArray> tiffFieldArray = ((void *)0);
 
 	tiffFieldArray = _TIFFGetFields();
 	_TIFFSetupFields(tif, tiffFieldArray);   
@@ -1439,8 +1421,7 @@ TIFFDefaultDirectory(TIFF* tif)
 	return (1);
 }
 
-static int
-TIFFAdvanceDirectory(TIFF* tif, uint64* nextdir, uint64* off)
+static int TIFFAdvanceDirectory(TIFF *tif : itype(_Ptr<TIFF>), uint64 *nextdir, _Ptr<uint64> off)
 {
 	static const char module[] = "TIFFAdvanceDirectory";
 	if (isMapped(tif))
@@ -1581,8 +1562,7 @@ TIFFAdvanceDirectory(TIFF* tif, uint64* nextdir, uint64* off)
 /*
  * Count the number of directories in a file.
  */
-uint16
-TIFFNumberOfDirectories(TIFF* tif)
+uint16 TIFFNumberOfDirectories(_Ptr<TIFF> tif)
 {
 	static const char module[] = "TIFFNumberOfDirectories";
 	uint64 nextdir;
@@ -1612,8 +1592,7 @@ TIFFNumberOfDirectories(TIFF* tif)
  * Set the n-th directory as the current directory.
  * NB: Directories are numbered starting at 0.
  */
-int
-TIFFSetDirectory(TIFF* tif, uint16 dirn)
+int TIFFSetDirectory(TIFF *tif, uint16 dirn)
 {
 	uint64 nextdir;
 	uint16 n;
@@ -1646,8 +1625,7 @@ TIFFSetDirectory(TIFF* tif, uint16 dirn)
  * is used mainly to access directories linked with
  * the SubIFD tag (e.g. thumbnail images).
  */
-int
-TIFFSetSubDirectory(TIFF* tif, uint64 diroff)
+int TIFFSetSubDirectory(TIFF *tif, uint64 diroff)
 {
 	tif->tif_nextdiroff = diroff;
 	/*
@@ -1661,8 +1639,7 @@ TIFFSetSubDirectory(TIFF* tif, uint64 diroff)
 /*
  * Return file offset of the current directory.
  */
-uint64
-TIFFCurrentDirOffset(TIFF* tif)
+uint64 TIFFCurrentDirOffset(_Ptr<TIFF> tif)
 {
 	return (tif->tif_diroff);
 }
@@ -1671,8 +1648,7 @@ TIFFCurrentDirOffset(TIFF* tif)
  * Return an indication of whether or not we are
  * at the last directory in the file.
  */
-int
-TIFFLastDirectory(TIFF* tif)
+int TIFFLastDirectory(_Ptr<TIFF> tif)
 {
 	return (tif->tif_nextdiroff == 0);
 }
@@ -1680,8 +1656,7 @@ TIFFLastDirectory(TIFF* tif)
 /*
  * Unlink the specified directory from the directory chain.
  */
-int
-TIFFUnlinkDirectory(TIFF* tif, uint16 dirn)
+int TIFFUnlinkDirectory(TIFF *tif, uint16 dirn)
 {
 	static const char module[] = "TIFFUnlinkDirectory";
 	uint64 nextdir;

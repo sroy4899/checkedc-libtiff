@@ -89,7 +89,7 @@ typedef struct {
 	uint16  td_planarconfig;
 	float   td_xposition, td_yposition;
 	uint16  td_pagenumber[2];
-	uint16* td_colormap[3];
+	uint16* td_colormap _Checked[3];
 	uint16  td_halftonehints[2];
 	uint16  td_extrasamples;
 	uint16* td_sampleinfo;
@@ -112,7 +112,7 @@ typedef struct {
 	uint16  td_ycbcrsubsampling[2];
 	uint16  td_ycbcrpositioning;
 	/* Colorimetry parameters */
-	uint16* td_transferfunction[3];
+	uint16* td_transferfunction _Checked[3];
 	float*	td_refblackwhite;
 	/* CMYK parameters */
 	int     td_inknameslen;
@@ -259,10 +259,10 @@ typedef enum {
 extern "C" {
 #endif
 
-extern const TIFFFieldArray* _TIFFGetFields(void);
-extern const TIFFFieldArray* _TIFFGetExifFields(void);
-extern void _TIFFSetupFields(TIFF* tif, const TIFFFieldArray* infoarray);
-extern void _TIFFPrintFieldInfo(TIFF*, FILE*);
+extern _Ptr<const TIFFFieldArray> _TIFFGetFields(void);
+extern _Ptr<const TIFFFieldArray> _TIFFGetExifFields(void);
+extern void _TIFFSetupFields(TIFF *tif, _Ptr<const TIFFFieldArray> fieldarray);
+extern void _TIFFPrintFieldInfo(_Ptr<TIFF> tif, FILE *);
 
 extern int _TIFFFillStriles(TIFF*);        
 
@@ -291,13 +291,13 @@ struct _TIFFField {
 	unsigned char field_oktochange;         /* if true, can change while writing */
 	unsigned char field_passcount;          /* if true, pass dir count on set */
 	char* field_name;                       /* ASCII name */
-	TIFFFieldArray* field_subfields;        /* if field points to child ifds, child ifd field definition array */
+	_Ptr<TIFFFieldArray> field_subfields;        /* if field points to child ifds, child ifd field definition array */
 };
 
-extern int _TIFFMergeFields(TIFF*, const TIFFField[], uint32);
-extern const TIFFField* _TIFFFindOrRegisterField(TIFF *, uint32, TIFFDataType);
-extern  TIFFField* _TIFFCreateAnonField(TIFF *, uint32, TIFFDataType);
-extern int _TIFFCheckFieldIsValidForCodec(TIFF *tif, ttag_t tag);
+extern int _TIFFMergeFields(TIFF *, const TIFFField [], uint32);
+extern const TIFFField * _TIFFFindOrRegisterField(TIFF *, uint32, TIFFDataType);
+extern TIFFField * _TIFFCreateAnonField(TIFF *tif : itype(_Ptr<TIFF>), uint32, TIFFDataType);
+extern int _TIFFCheckFieldIsValidForCodec(_Ptr<TIFF> tif, ttag_t tag);
 
 #if defined(__cplusplus)
 }

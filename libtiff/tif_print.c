@@ -32,10 +32,9 @@
 
 #include <ctype.h>
 
-static void
-_TIFFprintAsciiBounded(FILE* fd, const char* cp, size_t max_chars);
+static void _TIFFprintAsciiBounded(FILE *fd, const char *cp : itype(_Array_ptr<const char>) count(max_chars), size_t max_chars);
 
-static const char * const photoNames[] = {
+static const _Nt_array_ptr<const char> photoNames _Checked[11] =  {
     "min-is-white",				/* PHOTOMETRIC_MINISWHITE */
     "min-is-black",				/* PHOTOMETRIC_MINISBLACK */
     "RGB color",				/* PHOTOMETRIC_RGB */
@@ -50,7 +49,7 @@ static const char * const photoNames[] = {
 };
 #define	NPHOTONAMES	(sizeof (photoNames) / sizeof (photoNames[0]))
 
-static const char * const orientNames[] = {
+static const _Nt_array_ptr<const char> orientNames _Checked[9] =  {
     "0 (0x0)",
     "row 0 top, col 0 lhs",			/* ORIENTATION_TOPLEFT */
     "row 0 top, col 0 rhs",			/* ORIENTATION_TOPRIGHT */
@@ -63,9 +62,7 @@ static const char * const orientNames[] = {
 };
 #define	NORIENTNAMES	(sizeof (orientNames) / sizeof (orientNames[0]))
 
-static void
-_TIFFPrintField(FILE* fd, const TIFFField *fip,
-		uint32 value_count, void *raw_data)
+static void _TIFFPrintField(FILE *fd, const TIFFField *fip : itype(_Ptr<const TIFFField>), uint32 value_count, void *raw_data)
 {
 	uint32 j;
 		
@@ -137,9 +134,7 @@ _TIFFPrintField(FILE* fd, const TIFFField *fip,
 	fprintf(fd, "\n");
 }
 
-static int
-_TIFFPrettyPrintField(TIFF* tif, const TIFFField *fip, FILE* fd, uint32 tag,
-		      uint32 value_count, void *raw_data)
+static int _TIFFPrettyPrintField(TIFF *tif : itype(_Ptr<TIFF>), const TIFFField *fip : itype(_Ptr<const TIFFField>), FILE *fd, uint32 tag, uint32 value_count, void *raw_data)
 {
         (void) tif;
 
@@ -230,10 +225,9 @@ _TIFFPrettyPrintField(TIFF* tif, const TIFFField *fip, FILE* fd, uint32 tag,
  * Print the contents of the current directory
  * to the specified stdio file stream.
  */
-void
-TIFFPrintDirectory(TIFF* tif, FILE* fd, long flags)
+void TIFFPrintDirectory(TIFF *tif, FILE *fd, long flags)
 {
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	char *sep;
 	long l, n;
 
@@ -674,17 +668,15 @@ TIFFPrintDirectory(TIFF* tif, FILE* fd, long flags)
 	}
 }
 
-void
-_TIFFprintAscii(FILE* fd, const char* cp)
+void _TIFFprintAscii(FILE *fd, const char *cp)
 {
 	_TIFFprintAsciiBounded( fd, cp, strlen(cp));
 }
 
-static void
-_TIFFprintAsciiBounded(FILE* fd, const char* cp, size_t max_chars)
+static void _TIFFprintAsciiBounded(FILE *fd, const char *cp : itype(_Array_ptr<const char>) count(max_chars), size_t max_chars)
 {
 	for (; max_chars > 0 && *cp != '\0'; cp++, max_chars--) {
-		const char* tp;
+		_Array_ptr<const char> tp = ((void *)0);
 
 		if (isprint((int)*cp)) {
 			fputc(*cp, fd);
@@ -700,8 +692,7 @@ _TIFFprintAsciiBounded(FILE* fd, const char* cp, size_t max_chars)
 	}
 }
 
-void
-_TIFFprintAsciiTag(FILE* fd, const char* name, const char* value)
+void _TIFFprintAsciiTag(FILE *fd, _Ptr<const char> name, const char *value)
 {
 	fprintf(fd, "  %s: \"", name);
 	_TIFFprintAscii(fd, value);

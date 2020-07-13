@@ -29,8 +29,7 @@
  */
 #include "tiffiop.h"
 
-static int
-TIFFNoEncode(TIFF* tif, const char* method)
+static int TIFFNoEncode(TIFF *tif, _Ptr<const char> method)
 {
 	const TIFFCodec* c = TIFFFindCODEC(tif->tif_dir.td_compression);
 
@@ -46,29 +45,25 @@ TIFFNoEncode(TIFF* tif, const char* method)
 	return (-1);
 }
 
-int
-_TIFFNoRowEncode(TIFF* tif, uint8* pp, tmsize_t cc, uint16 s)
+int _TIFFNoRowEncode(TIFF *tif, uint8 *pp, tmsize_t cc, uint16 s)
 {
 	(void) pp; (void) cc; (void) s;
 	return (TIFFNoEncode(tif, "scanline"));
 }
 
-int
-_TIFFNoStripEncode(TIFF* tif, uint8* pp, tmsize_t cc, uint16 s)
+int _TIFFNoStripEncode(TIFF *tif, uint8 *pp, tmsize_t cc, uint16 s)
 {
 	(void) pp; (void) cc; (void) s;
 	return (TIFFNoEncode(tif, "strip"));
 }
 
-int
-_TIFFNoTileEncode(TIFF* tif, uint8* pp, tmsize_t cc, uint16 s)
+int _TIFFNoTileEncode(TIFF *tif, uint8 *pp, tmsize_t cc, uint16 s)
 {
 	(void) pp; (void) cc; (void) s;
 	return (TIFFNoEncode(tif, "tile"));
 }
 
-static int
-TIFFNoDecode(TIFF* tif, const char* method)
+static int TIFFNoDecode(TIFF *tif, _Ptr<const char> method)
 {
 	const TIFFCodec* c = TIFFFindCODEC(tif->tif_dir.td_compression);
 
@@ -83,36 +78,31 @@ TIFFNoDecode(TIFF* tif, const char* method)
 	return (0);
 }
 
-static int
-_TIFFNoFixupTags(TIFF* tif)
+static int _TIFFNoFixupTags(TIFF *tif)
 {
 	(void) tif;
 	return (1);
 }
 
-int
-_TIFFNoRowDecode(TIFF* tif, uint8* pp, tmsize_t cc, uint16 s)
+int _TIFFNoRowDecode(TIFF *tif, uint8 *pp, tmsize_t cc, uint16 s)
 {
 	(void) pp; (void) cc; (void) s;
 	return (TIFFNoDecode(tif, "scanline"));
 }
 
-int
-_TIFFNoStripDecode(TIFF* tif, uint8* pp, tmsize_t cc, uint16 s)
+int _TIFFNoStripDecode(TIFF *tif, uint8 *pp, tmsize_t cc, uint16 s)
 {
 	(void) pp; (void) cc; (void) s;
 	return (TIFFNoDecode(tif, "strip"));
 }
 
-int
-_TIFFNoTileDecode(TIFF* tif, uint8* pp, tmsize_t cc, uint16 s)
+int _TIFFNoTileDecode(TIFF *tif, uint8 *pp, tmsize_t cc, uint16 s)
 {
 	(void) pp; (void) cc; (void) s;
 	return (TIFFNoDecode(tif, "tile"));
 }
 
-int
-_TIFFNoSeek(TIFF* tif, uint32 off)
+int _TIFFNoSeek(TIFF *tif, uint32 off)
 {
 	(void) off;
 	TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
@@ -120,18 +110,16 @@ _TIFFNoSeek(TIFF* tif, uint32 off)
 	return (0);
 }
 
-int
-_TIFFNoPreCode(TIFF* tif, uint16 s)
+int _TIFFNoPreCode(TIFF *tif, uint16 s)
 {
 	(void) tif; (void) s;
 	return (1);
 }
 
-static int _TIFFtrue(TIFF* tif) { (void) tif; return (1); }
-static void _TIFFvoid(TIFF* tif) { (void) tif; }
+static int _TIFFtrue(TIFF *tif) { (void) tif; return (1); }
+static void _TIFFvoid(TIFF *tif) { (void) tif; }
 
-void
-_TIFFSetDefaultCompressionState(TIFF* tif)
+void _TIFFSetDefaultCompressionState(TIFF *tif)
 {
 	tif->tif_fixuptags = _TIFFNoFixupTags; 
 	tif->tif_decodestatus = TRUE;
@@ -155,8 +143,7 @@ _TIFFSetDefaultCompressionState(TIFF* tif)
 	tif->tif_flags &= ~(TIFF_NOBITREV|TIFF_NOREADRAW);
 }
 
-int
-TIFFSetCompressionScheme(TIFF* tif, int scheme)
+int TIFFSetCompressionScheme(TIFF *tif, int scheme)
 {
 	const TIFFCodec *c = TIFFFindCODEC((uint16) scheme);
 
@@ -181,8 +168,7 @@ typedef struct _codec {
 } codec_t;
 static codec_t* registeredCODECS = NULL;
 
-const TIFFCodec*
-TIFFFindCODEC(uint16 scheme)
+const TIFFCodec * TIFFFindCODEC(uint16 scheme)
 {
 	const TIFFCodec* c;
 	codec_t* cd;
@@ -196,8 +182,7 @@ TIFFFindCODEC(uint16 scheme)
 	return ((const TIFFCodec*) 0);
 }
 
-TIFFCodec*
-TIFFRegisterCODEC(uint16 scheme, const char* name, TIFFInitMethod init)
+TIFFCodec * TIFFRegisterCODEC(uint16 scheme, const char *name, _Ptr<int (TIFF *, int )> init)
 {
 	codec_t* cd = (codec_t*)
 	    _TIFFmalloc((tmsize_t)(sizeof (codec_t) + sizeof (TIFFCodec) + strlen(name)+1));
@@ -219,11 +204,10 @@ TIFFRegisterCODEC(uint16 scheme, const char* name, TIFFInitMethod init)
 	return (cd->info);
 }
 
-void
-TIFFUnRegisterCODEC(TIFFCodec* c)
+void TIFFUnRegisterCODEC(_Ptr<TIFFCodec> c)
 {
 	codec_t* cd;
-	codec_t** pcd;
+	_Ptr<codec_t*> pcd = ((void *)0);
 
 	for (pcd = &registeredCODECS; (cd = *pcd) != NULL; pcd = &cd->next)
 		if (cd->info == c) {

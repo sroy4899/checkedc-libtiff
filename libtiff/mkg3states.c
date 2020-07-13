@@ -46,55 +46,55 @@ extern int getopt(int argc, char * const argv[], const char *optstring);
 #define	streq(a,b)	(strcmp(a,b) == 0)
 
 /* NB: can't use names in tif_fax3.h 'cuz they are declared const */
-TIFFFaxTabEnt MainTable[128];
-TIFFFaxTabEnt WhiteTable[4096];
-TIFFFaxTabEnt BlackTable[8192];
+TIFFFaxTabEnt MainTable _Checked[128];
+TIFFFaxTabEnt WhiteTable _Checked[4096];
+TIFFFaxTabEnt BlackTable _Checked[8192];
 
 struct proto {
     uint16 code;		/* right justified, lsb-first, zero filled */
     uint16 val;		/* (pixel count)<<4 + code width  */
 };
 
-static struct proto Pass[] = {
+static struct proto Pass _Checked[2] =  {
 { 0x0008, 4 },
 { 0, 0 }
 };
 
-static struct proto Horiz[]  = {
+static struct proto Horiz _Checked[2] =  {
 { 0x0004, 3 },
 { 0, 0 }
 };
 
-static struct proto V0[]  = {
+static struct proto V0 _Checked[2] =  {
 { 0x0001, 1 },
 { 0, 0 }
 };
 
-static struct proto VR[]  = {
+static struct proto VR _Checked[4] =  {
 { 0x0006, (1<<4)+3 },
 { 0x0030, (2<<4)+6 },
 { 0x0060, (3<<4)+7 },
 { 0, 0 }
 };
 
-static struct proto VL[]  = {
+static struct proto VL _Checked[4] =  {
 { 0x0002, (1<<4)+3 },
 { 0x0010, (2<<4)+6 },
 { 0x0020, (3<<4)+7 },
 { 0, 0 }
 };
 
-static struct proto Ext[]  = {
+static struct proto Ext _Checked[2] =  {
 { 0x0040, 7 },
 { 0, 0 }
 };
 
-static struct proto EOLV[]  = {
+static struct proto EOLV _Checked[2] =  {
 { 0x0000, 7 },
 { 0, 0 }
 };
 
-static struct proto MakeUpW[] = {
+static struct proto MakeUpW _Checked[28] =  {
 { 0x001b, 1029 },
 { 0x0009, 2053 },
 { 0x003a, 3078 },
@@ -125,7 +125,7 @@ static struct proto MakeUpW[] = {
 { 0, 0 }
 };
 
-static struct proto MakeUpB[] = {
+static struct proto MakeUpB _Checked[28] =  {
 { 0x03c0, 1034 },
 { 0x0130, 2060 },
 { 0x0930, 3084 },
@@ -156,7 +156,7 @@ static struct proto MakeUpB[] = {
 { 0, 0 }
 };
 
-static struct proto MakeUp[] = {
+static struct proto MakeUp _Checked[14] =  {
 { 0x0080, 28683 },
 { 0x0180, 29707 },
 { 0x0580, 30731 },
@@ -173,7 +173,7 @@ static struct proto MakeUp[] = {
 { 0, 0 }
 };
 
-static struct proto TermW[] = {
+static struct proto TermW _Checked[65] =  {
 { 0x00ac, 8 },
 { 0x0038, 22 },
 { 0x000e, 36 },
@@ -241,7 +241,7 @@ static struct proto TermW[] = {
 { 0, 0 }
 };
 
-static struct proto TermB[] = {
+static struct proto TermB _Checked[65] =  {
 { 0x03b0, 10 },
 { 0x0002, 19 },
 { 0x0003, 34 },
@@ -309,13 +309,12 @@ static struct proto TermB[] = {
 { 0, 0 }
 };
 
-static struct proto EOLH[] = {
+static struct proto EOLH _Checked[2] =  {
 { 0x0000, 11 },
 { 0, 0 }
 };
 
-static void
-FillTable(TIFFFaxTabEnt *T, int Size, struct proto *P, int State)
+static void FillTable(_Array_ptr<TIFFFaxTabEnt> T : count(Size), int Size, _Array_ptr<struct proto> P : count(State), int State)
 {
     int limit = 1 << Size;
 
@@ -325,7 +324,7 @@ FillTable(TIFFFaxTabEnt *T, int Size, struct proto *P, int State)
 	int incr = 1 << width;
 	int code;
 	for (code = P->code; code < limit; code += incr) {
-	    TIFFFaxTabEnt *E = T+code;
+	    _Ptr<TIFFFaxTabEnt> E =  T+code;
 	    E->State = State;
 	    E->Width = width;
 	    E->Param = param;
@@ -337,14 +336,13 @@ FillTable(TIFFFaxTabEnt *T, int Size, struct proto *P, int State)
 static	char* storage_class = "";
 static	char* const_class = "";
 static	int packoutput = 1;
-static	char* prebrace = "";
-static	char* postbrace = "";
+static _Ptr<char> prebrace =  "";
+static _Ptr<char> postbrace =  "";
 
-void
-WriteTable(FILE* fd, const TIFFFaxTabEnt* T, int Size, const char* name)
+void WriteTable(FILE *fd, _Array_ptr<const TIFFFaxTabEnt> T : count(Size), int Size, _Ptr<const char> name)
 {
     int i;
-    char* sep;
+    _Ptr<char> sep = ((void *)0);
 
     fprintf(fd, "%s %s TIFFFaxTabEnt %s[%d] = {",
 	storage_class, const_class, name, Size);
@@ -375,8 +373,7 @@ WriteTable(FILE* fd, const TIFFFaxTabEnt* T, int Size, const char* name)
 }
 
 /* initialise the huffman code tables */
-int
-main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     FILE* fd;
     char* outputfile;

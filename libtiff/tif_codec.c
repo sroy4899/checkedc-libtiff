@@ -29,7 +29,7 @@
  */
 #include "tiffiop.h"
 
-static int NotConfigured(TIFF*, int);
+static int NotConfigured(TIFF *tif, int scheme);
 
 #ifndef LZW_SUPPORT
 #define TIFFInitLZW NotConfigured
@@ -108,8 +108,7 @@ TIFFCodec _TIFFBuiltinCODECS[] = {
     { NULL,             0,                      NULL }
 };
 
-static int
-_notConfigured(TIFF* tif)
+static int _notConfigured(TIFF *tif)
 {
 	const TIFFCodec* c = TIFFFindCODEC(tif->tif_dir.td_compression);
         char compression_code[20];
@@ -121,8 +120,7 @@ _notConfigured(TIFF* tif)
 	return (0);
 }
 
-static int
-NotConfigured(TIFF* tif, int scheme)
+static int NotConfigured(TIFF *tif, int scheme)
 {
 	(void) scheme;
 
@@ -145,8 +143,7 @@ NotConfigured(TIFF* tif, int scheme)
  * 0 will be returned.
  */
 
-int
-TIFFIsCODECConfigured(uint16 scheme)
+int TIFFIsCODECConfigured(uint16 scheme)
 {
 	const TIFFCodec* codec = TIFFFindCODEC(scheme);
 

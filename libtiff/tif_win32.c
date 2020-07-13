@@ -55,8 +55,7 @@
 
 #include <windows.h>
 
-static tmsize_t
-_tiffReadProc(thandle_t fd, void* buf, tmsize_t size)
+static tmsize_t _tiffReadProc(thandle_t fd, void *buf, tmsize_t size)
 {
 	/* tmsize_t is 64bit on 64bit systems, but the WinAPI ReadFile takes
 	 * 32bit sizes, so we loop through the data in suitable 32bit sized
@@ -85,8 +84,7 @@ _tiffReadProc(thandle_t fd, void* buf, tmsize_t size)
 	return(p);
 }
 
-static tmsize_t
-_tiffWriteProc(thandle_t fd, void* buf, tmsize_t size)
+static tmsize_t _tiffWriteProc(thandle_t fd, void *buf, tmsize_t size)
 {
 	/* tmsize_t is 64bit on 64bit systems, but the WinAPI WriteFile takes
 	 * 32bit sizes, so we loop through the data in suitable 32bit sized
@@ -115,8 +113,7 @@ _tiffWriteProc(thandle_t fd, void* buf, tmsize_t size)
 	return(p);
 }
 
-static uint64
-_tiffSeekProc(thandle_t fd, uint64 off, int whence)
+static uint64 _tiffSeekProc(thandle_t fd, uint64 off, int whence)
 {
 	LARGE_INTEGER offli;
 	DWORD dwMoveMethod;
@@ -142,22 +139,19 @@ _tiffSeekProc(thandle_t fd, uint64 off, int whence)
 	return(offli.QuadPart);
 }
 
-static int
-_tiffCloseProc(thandle_t fd)
+static int _tiffCloseProc(thandle_t fd)
 {
 	return (CloseHandle(fd) ? 0 : -1);
 }
 
-static uint64
-_tiffSizeProc(thandle_t fd)
+static uint64 _tiffSizeProc(thandle_t fd)
 {
 	ULARGE_INTEGER m;
 	m.LowPart=GetFileSize(fd,&m.HighPart);
 	return(m.QuadPart);
 }
 
-static int
-_tiffDummyMapProc(thandle_t fd, void** pbase, toff_t* psize)
+static int _tiffDummyMapProc(thandle_t fd, void **pbase, toff_t *psize)
 {
 	(void) fd;
 	(void) pbase;
@@ -176,8 +170,7 @@ _tiffDummyMapProc(thandle_t fd, void** pbase, toff_t* psize)
  * This removes a nasty OS dependency and cures a problem
  * with Visual C++ 5.0
  */
-static int
-_tiffMapProc(thandle_t fd, void** pbase, toff_t* psize)
+static int _tiffMapProc(thandle_t fd, void **pbase, toff_t *psize)
 {
 	uint64 size;
 	tmsize_t sizem;
@@ -201,16 +194,14 @@ _tiffMapProc(thandle_t fd, void** pbase, toff_t* psize)
 	return(1);
 }
 
-static void
-_tiffDummyUnmapProc(thandle_t fd, void* base, toff_t size)
+static void _tiffDummyUnmapProc(thandle_t fd, void *base, toff_t size)
 {
 	(void) fd;
 	(void) base;
 	(void) size;
 }
 
-static void
-_tiffUnmapProc(thandle_t fd, void* base, toff_t size)
+static void _tiffUnmapProc(thandle_t fd, void *base, toff_t size)
 {
 	(void) fd;
 	(void) size;
@@ -222,8 +213,7 @@ _tiffUnmapProc(thandle_t fd, void* base, toff_t size)
  * Note that TIFFFdOpen and TIFFOpen recognise the character 'u' in the mode
  * string, which forces the file to be opened unmapped.
  */
-TIFF*
-TIFFFdOpen(int ifd, const char* name, const char* mode)
+TIFF * TIFFFdOpen(int ifd, const char *name, _Array_ptr<const char> mode)
 {
 	TIFF* tif;
 	int fSuppressMap;
@@ -252,8 +242,7 @@ TIFFFdOpen(int ifd, const char* name, const char* mode)
 /*
  * Open a TIFF file for read/writing.
  */
-TIFF*
-TIFFOpen(const char* name, const char* mode)
+TIFF * TIFFOpen(const char *name, _Array_ptr<const char> mode)
 {
 	static const char module[] = "TIFFOpen";
 	thandle_t fd;
@@ -291,8 +280,7 @@ TIFFOpen(const char* name, const char* mode)
 /*
  * Open a TIFF file with a Unicode filename, for read/writing.
  */
-TIFF*
-TIFFOpenW(const wchar_t* name, const char* mode)
+TIFF * TIFFOpenW(_Ptr<const int> name, _Array_ptr<const char> mode)
 {
 	static const char module[] = "TIFFOpenW";
 	thandle_t fd;
@@ -349,8 +337,7 @@ TIFFOpenW(const wchar_t* name, const char* mode)
 
 #endif /* ndef _WIN32_WCE */
 
-void*
-_TIFFmalloc(tmsize_t s)
+void * _TIFFmalloc(tmsize_t s)
 {
         if (s == 0)
                 return ((void *) NULL);
@@ -358,7 +345,7 @@ _TIFFmalloc(tmsize_t s)
 	return (malloc((size_t) s));
 }
 
-void* _TIFFcalloc(tmsize_t nmemb, tmsize_t siz)
+void * _TIFFcalloc(tmsize_t nmemb, tmsize_t siz)
 {
     if( nmemb == 0 || siz == 0 )
         return ((void *) NULL);
@@ -366,32 +353,27 @@ void* _TIFFcalloc(tmsize_t nmemb, tmsize_t siz)
     return calloc((size_t) nmemb, (size_t)siz);
 }
 
-void
-_TIFFfree(void* p)
+void _TIFFfree(void *p)
 {
 	free(p);
 }
 
-void*
-_TIFFrealloc(void* p, tmsize_t s)
+void * _TIFFrealloc(void *p, tmsize_t s)
 {
 	return (realloc(p, (size_t) s));
 }
 
-void
-_TIFFmemset(void* p, int v, tmsize_t c)
+void _TIFFmemset(void *p, int v, tmsize_t c)
 {
 	memset(p, v, (size_t) c);
 }
 
-void
-_TIFFmemcpy(void* d, const void* s, tmsize_t c)
+void _TIFFmemcpy(void *d, const void *s, tmsize_t c)
 {
 	memcpy(d, s, (size_t) c);
 }
 
-int
-_TIFFmemcmp(const void* p1, const void* p2, tmsize_t c)
+int _TIFFmemcmp(const void *p1, const void *p2, tmsize_t c)
 {
 	return (memcmp(p1, p2, (size_t) c));
 }
@@ -402,8 +384,7 @@ _TIFFmemcmp(const void* p1, const void* p2, tmsize_t c)
 #  define vsnprintf _vsnprintf
 #endif
 
-static void
-Win32WarningHandler(const char* module, const char* fmt, va_list ap)
+static void Win32WarningHandler(const char *module, const char *fmt, va_list ap)
 {
 	if (module != NULL)
 		fprintf(stderr, "%s: ", module);
@@ -411,17 +392,16 @@ Win32WarningHandler(const char* module, const char* fmt, va_list ap)
 	vfprintf(stderr, fmt, ap);
 	fprintf(stderr, ".\n");
 }
-TIFFErrorHandler _TIFFwarningHandler = Win32WarningHandler;
+_Ptr<void (const char *, const char *, struct __va_list_tag *)> _TIFFwarningHandler =  Win32WarningHandler;
 
-static void
-Win32ErrorHandler(const char* module, const char* fmt, va_list ap)
+static void Win32ErrorHandler(_Ptr<const char> module, const char *fmt, va_list ap)
 {
 	if (module != NULL)
 		fprintf(stderr, "%s: ", module);
 	vfprintf(stderr, fmt, ap);
 	fprintf(stderr, ".\n");
 }
-TIFFErrorHandler _TIFFerrorHandler = Win32ErrorHandler;
+_Ptr<void (_Ptr<const char> , const char *, struct __va_list_tag *)> _TIFFerrorHandler =  Win32ErrorHandler;
 
 #endif /* ndef _WIN32_WCE */
 

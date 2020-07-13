@@ -31,18 +31,18 @@
 
 #include "tiffiop.h"
 
-int TIFFGetTagListCount( TIFF *tif )
+int TIFFGetTagListCount(TIFF *tif : itype(_Ptr<TIFF>))
 
 {
-    TIFFDirectory* td = &tif->tif_dir;
+    _Ptr<TIFFDirectory> td =  &tif->tif_dir;
     
     return td->td_customValueCount;
 }
 
-uint32 TIFFGetTagListEntry( TIFF *tif, int tag_index )
+uint32 TIFFGetTagListEntry(TIFF *tif : itype(_Ptr<TIFF>), int tag_index)
 
 {
-    TIFFDirectory* td = &tif->tif_dir;
+    _Ptr<TIFFDirectory> td =  &tif->tif_dir;
 
     if( tag_index < 0 || tag_index >= td->td_customValueCount )
         return (uint32)(-1);
@@ -55,13 +55,13 @@ uint32 TIFFGetTagListEntry( TIFF *tif, int tag_index )
 ** structure to application code without giving access to the private
 ** TIFF structure.
 */
-TIFFTagMethods *TIFFAccessTagMethods( TIFF *tif )
+_Ptr<TIFFTagMethods> TIFFAccessTagMethods(_Ptr<TIFF> tif)
 
 {
     return &(tif->tif_tagmethods);
 }
 
-void *TIFFGetClientInfo( TIFF *tif, const char *name )
+void * TIFFGetClientInfo(_Ptr<TIFF> tif, const char *name)
 
 {
     TIFFClientInfoLink *psLink = tif->tif_clientinfo;
@@ -75,7 +75,7 @@ void *TIFFGetClientInfo( TIFF *tif, const char *name )
         return NULL;
 }
 
-void TIFFSetClientInfo( TIFF *tif, void *data, const char *name )
+void TIFFSetClientInfo(_Ptr<TIFF> tif, void *data, const char *name)
 
 {
     TIFFClientInfoLink *psLink = tif->tif_clientinfo;

@@ -31,8 +31,7 @@
  */
 #include <stdio.h>
 
-static int
-PackBitsPreEncode(TIFF* tif, uint16 s)
+static int PackBitsPreEncode(TIFF *tif, uint16 s)
 {
 	(void) s;
 
@@ -49,8 +48,7 @@ PackBitsPreEncode(TIFF* tif, uint16 s)
 	return (1);
 }
 
-static int
-PackBitsPostEncode(TIFF* tif)
+static int PackBitsPostEncode(TIFF *tif)
 {
         if (tif->tif_data)
             _TIFFfree(tif->tif_data);
@@ -60,8 +58,7 @@ PackBitsPostEncode(TIFF* tif)
 /*
  * Encode a run of pixels.
  */
-static int
-PackBitsEncode(TIFF* tif, uint8* buf, tmsize_t cc, uint16 s)
+static int PackBitsEncode(TIFF *tif, uint8 *buf, tmsize_t cc, uint16 s)
 {
 	unsigned char* bp = (unsigned char*) buf;
 	uint8* op;
@@ -191,8 +188,7 @@ PackBitsEncode(TIFF* tif, uint8* buf, tmsize_t cc, uint16 s)
  * the decoder if data is read, for example, by scanlines
  * when it was encoded by strips.
  */
-static int
-PackBitsEncodeChunk(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
+static int PackBitsEncodeChunk(TIFF *tif, uint8 *bp, tmsize_t cc, uint16 s)
 {
 	tmsize_t rowsize = *(tmsize_t*)tif->tif_data;
 
@@ -210,8 +206,7 @@ PackBitsEncodeChunk(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
 	return (1);
 }
 
-static int
-PackBitsDecode(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
+static int PackBitsDecode(TIFF *tif, uint8 *op, tmsize_t occ, uint16 s)
 {
 	static const char module[] = "PackBitsDecode";
 	char *bp;
@@ -283,8 +278,7 @@ PackBitsDecode(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
 	return (1);
 }
 
-int
-TIFFInitPackBits(TIFF* tif, int scheme)
+int TIFFInitPackBits(TIFF *tif, int scheme)
 {
 	(void) scheme;
 	tif->tif_decoderow = PackBitsDecode;

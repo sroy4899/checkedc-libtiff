@@ -30,17 +30,17 @@
 #include "tiffiop.h"
 #include <stdio.h>
 
-static int gtTileContig(TIFFRGBAImage*, uint32*, uint32, uint32);
-static int gtTileSeparate(TIFFRGBAImage*, uint32*, uint32, uint32);
-static int gtStripContig(TIFFRGBAImage*, uint32*, uint32, uint32);
-static int gtStripSeparate(TIFFRGBAImage*, uint32*, uint32, uint32);
-static int PickContigCase(TIFFRGBAImage*);
-static int PickSeparateCase(TIFFRGBAImage*);
+static int gtTileContig(TIFFRGBAImage *img, uint32 *raster, uint32 w, uint32 h);
+static int gtTileSeparate(TIFFRGBAImage *img, uint32 *raster, uint32 w, uint32 h);
+static int gtStripContig(TIFFRGBAImage *img, uint32 *raster, uint32 w, uint32 h);
+static int gtStripSeparate(TIFFRGBAImage *img, uint32 *raster, uint32 w, uint32 h);
+static int PickContigCase(_Ptr<TIFFRGBAImage> img);
+static int PickSeparateCase(_Ptr<TIFFRGBAImage> img);
 
-static int BuildMapUaToAa(TIFFRGBAImage* img);
-static int BuildMapBitdepth16To8(TIFFRGBAImage* img);
+static int BuildMapUaToAa(_Ptr<TIFFRGBAImage> img);
+static int BuildMapBitdepth16To8(_Ptr<TIFFRGBAImage> img);
 
-static const char photoTag[] = "PhotometricInterpretation";
+static const char photoTag _Checked[26] =  "PhotometricInterpretation";
 
 /* 
  * Helper constants used in Orientation tag handling
@@ -70,10 +70,9 @@ static const TIFFDisplay display_sRGB = {
  * be handled.  If 0 is returned, emsg contains the reason
  * why it is being rejected.
  */
-int
-TIFFRGBAImageOK(TIFF* tif, char emsg[1024])
+int TIFFRGBAImageOK(TIFF *tif, char emsg[1024])
 {
-	TIFFDirectory* td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	uint16 photometric;
 	int colorchannels;
 
@@ -210,8 +209,7 @@ TIFFRGBAImageOK(TIFF* tif, char emsg[1024])
 	return (1);
 }
 
-void
-TIFFRGBAImageEnd(TIFFRGBAImage* img)
+void TIFFRGBAImageEnd(_Ptr<TIFFRGBAImage> img)
 {
 	if (img->Map) {
 		_TIFFfree(img->Map);
@@ -250,8 +248,7 @@ TIFFRGBAImageEnd(TIFFRGBAImage* img)
 	}
 }
 
-static int
-isCCITTCompression(TIFF* tif)
+static int isCCITTCompression(TIFF *tif)
 {
     uint16 compress;
     TIFFGetField(tif, TIFFTAG_COMPRESSION, &compress);
@@ -261,10 +258,9 @@ isCCITTCompression(TIFF* tif)
 	    compress == COMPRESSION_CCITTRLEW);
 }
 
-int
-TIFFRGBAImageBegin(TIFFRGBAImage* img, TIFF* tif, int stop, char emsg[1024])
+int TIFFRGBAImageBegin(_Ptr<TIFFRGBAImage> img, TIFF *tif, int stop, char emsg[1024])
 {
-	uint16* sampleinfo;
+	_Array_ptr<uint16> sampleinfo = ((void *)0);
 	uint16 extrasamples;
 	uint16 planarconfig;
 	uint16 compress;
@@ -496,8 +492,7 @@ TIFFRGBAImageBegin(TIFFRGBAImage* img, TIFF* tif, int stop, char emsg[1024])
         return 0;
 }
 
-int
-TIFFRGBAImageGet(TIFFRGBAImage* img, uint32* raster, uint32 w, uint32 h)
+int TIFFRGBAImageGet(TIFFRGBAImage *img, uint32 *raster, uint32 w, uint32 h)
 {
     if (img->get == NULL) {
 		TIFFErrorExt(img->tif->tif_clientdata, TIFFFileName(img->tif), "No \"get\" routine setup");
@@ -515,13 +510,10 @@ TIFFRGBAImageGet(TIFFRGBAImage* img, uint32* raster, uint32 w, uint32 h)
  * Read the specified image into an ABGR-format rastertaking in account
  * specified orientation.
  */
-int
-TIFFReadRGBAImageOriented(TIFF* tif,
-			  uint32 rwidth, uint32 rheight, uint32* raster,
-			  int orientation, int stop)
+int TIFFReadRGBAImageOriented(TIFF *tif, uint32 rwidth, uint32 rheight, uint32 *raster, int orientation, int stop)
 {
     char emsg[1024] = "";
-    TIFFRGBAImage img;
+    TIFFRGBAImage img = {};
     int ok;
 
 	if (TIFFRGBAImageOK(tif, emsg) && TIFFRGBAImageBegin(&img, tif, stop, emsg)) {
@@ -541,16 +533,13 @@ TIFFReadRGBAImageOriented(TIFF* tif,
  * Read the specified image into an ABGR-format raster. Use bottom left
  * origin for raster by default.
  */
-int
-TIFFReadRGBAImage(TIFF* tif,
-		  uint32 rwidth, uint32 rheight, uint32* raster, int stop)
+int TIFFReadRGBAImage(TIFF *tif, uint32 rwidth, uint32 rheight, uint32 *raster, int stop)
 {
 	return TIFFReadRGBAImageOriented(tif, rwidth, rheight, raster,
 					 ORIENTATION_BOTLEFT, stop);
 }
 
-static int 
-setorientation(TIFFRGBAImage* img)
+static int setorientation(TIFFRGBAImage *img)
 {
 	switch (img->orientation) {
 		case ORIENTATION_TOPLEFT:
@@ -616,8 +605,7 @@ setorientation(TIFFRGBAImage* img)
  * or
  *	SamplesPerPixel == 1
  */	
-static int
-gtTileContig(TIFFRGBAImage* img, uint32* raster, uint32 w, uint32 h)
+static int gtTileContig(TIFFRGBAImage *img, uint32 *raster, uint32 w, uint32 h)
 {
     TIFF* tif = img->tif;
     tileContigRoutine put = img->put.contig;
@@ -729,8 +717,7 @@ gtTileContig(TIFFRGBAImage* img, uint32* raster, uint32 w, uint32 h)
  *	 PlanarConfiguration separated
  * We assume that all such images are RGB.
  */	
-static int
-gtTileSeparate(TIFFRGBAImage* img, uint32* raster, uint32 w, uint32 h)
+static int gtTileSeparate(TIFFRGBAImage *img, uint32 *raster, uint32 w, uint32 h)
 {
 	TIFF* tif = img->tif;
 	tileSeparateRoutine put = img->put.separate;
@@ -910,8 +897,7 @@ gtTileSeparate(TIFFRGBAImage* img, uint32* raster, uint32 w, uint32 h)
  * or
  *	SamplesPerPixel == 1
  */	
-static int
-gtStripContig(TIFFRGBAImage* img, uint32* raster, uint32 w, uint32 h)
+static int gtStripContig(TIFFRGBAImage *img, uint32 *raster, uint32 w, uint32 h)
 {
 	TIFF* tif = img->tif;
 	tileContigRoutine put = img->put.contig;
@@ -1005,8 +991,7 @@ gtStripContig(TIFFRGBAImage* img, uint32* raster, uint32 w, uint32 h)
  *	 PlanarConfiguration separated
  * We assume that all such images are RGB.
  */
-static int
-gtStripSeparate(TIFFRGBAImage* img, uint32* raster, uint32 w, uint32 h)
+static int gtStripSeparate(TIFFRGBAImage *img, uint32 *raster, uint32 w, uint32 h)
 {
 	TIFF* tif = img->tif;
 	tileSeparateRoutine put = img->put.separate;
@@ -2280,12 +2265,13 @@ static int isInRefBlackWhiteRange(float f)
     return f > (float)(-0x7FFFFFFF + 128) && f < (float)0x7FFFFFFF;
 }
 
-static int
-initYCbCrConversion(TIFFRGBAImage* img)
+static int initYCbCrConversion(_Ptr<TIFFRGBAImage> img)
 {
 	static const char module[] = "initYCbCrConversion";
 
-	float *luma, *refBlackWhite;
+_Array_ptr<float> luma = ((void *)0);
+_Array_ptr<float> refBlackWhite = ((void *)0);
+	
 
 	if (img->ycbcr == NULL) {
 		img->ycbcr = (TIFFYCbCrToRGB*) _TIFFmalloc(
@@ -2334,13 +2320,12 @@ initYCbCrConversion(TIFFRGBAImage* img)
 	return (1);
 }
 
-static tileContigRoutine
-initCIELabConversion(TIFFRGBAImage* img)
+static tileContigRoutine initCIELabConversion(_Ptr<TIFFRGBAImage> img) : itype(_Ptr<void (TIFFRGBAImage *, uint32 *, uint32 , uint32 , uint32 , uint32 , int32 , int32 , unsigned char *)>)
 {
 	static const char module[] = "initCIELabConversion";
 
-	float   *whitePoint;
-	float   refWhite[3];
+	_Array_ptr<float> whitePoint = ((void *)0);
+	float refWhite _Checked[3];
 
 	TIFFGetFieldDefaulted(img->tif, TIFFTAG_WHITEPOINT, &whitePoint);
 	if (whitePoint[1] == 0.0f ) {
@@ -2380,8 +2365,7 @@ initCIELabConversion(TIFFRGBAImage* img)
  * pixel values simply by indexing into the table with one
  * number.
  */
-static int
-makebwmap(TIFFRGBAImage* img)
+static int makebwmap(_Ptr<TIFFRGBAImage> img)
 {
     TIFFRGBValue* Map = img->Map;
     int bitspersample = img->bitspersample;
@@ -2439,8 +2423,7 @@ makebwmap(TIFFRGBAImage* img)
  * of the data samples to [0,255] --for display.  This
  * process also handles inverting B&W images when needed.
  */ 
-static int
-setupMap(TIFFRGBAImage* img)
+static int setupMap(_Ptr<TIFFRGBAImage> img)
 {
     int32 x, range;
 
@@ -2479,8 +2462,7 @@ setupMap(TIFFRGBAImage* img)
     return (1);
 }
 
-static int
-checkcmap(TIFFRGBAImage* img)
+static int checkcmap(_Ptr<TIFFRGBAImage> img)
 {
     uint16* r = img->redcmap;
     uint16* g = img->greencmap;
@@ -2493,8 +2475,7 @@ checkcmap(TIFFRGBAImage* img)
     return (8);
 }
 
-static void
-cvtcmap(TIFFRGBAImage* img)
+static void cvtcmap(_Ptr<TIFFRGBAImage> img)
 {
     uint16* r = img->redcmap;
     uint16* g = img->greencmap;
@@ -2517,8 +2498,7 @@ cvtcmap(TIFFRGBAImage* img)
  * pixel values simply by indexing into the table with one
  * number.
  */
-static int
-makecmap(TIFFRGBAImage* img)
+static int makecmap(_Ptr<TIFFRGBAImage> img)
 {
     int bitspersample = img->bitspersample;
     int nsamples = 8 / bitspersample;
@@ -2573,8 +2553,7 @@ makecmap(TIFFRGBAImage* img)
  * Construct any mapping table used
  * by the associated put routine.
  */
-static int
-buildMap(TIFFRGBAImage* img)
+static int buildMap(_Ptr<TIFFRGBAImage> img)
 {
     switch (img->photometric) {
     case PHOTOMETRIC_RGB:
@@ -2611,8 +2590,7 @@ buildMap(TIFFRGBAImage* img)
 /*
  * Select the appropriate conversion routine for packed data.
  */
-static int
-PickContigCase(TIFFRGBAImage* img)
+static int PickContigCase(_Ptr<TIFFRGBAImage> img)
 {
 	img->get = TIFFIsTiled(img->tif) ? gtTileContig : gtStripContig;
 	img->put.contig = NULL;
@@ -2766,8 +2744,7 @@ PickContigCase(TIFFRGBAImage* img)
  * NB: we assume that unpacked single channel data is directed
  *	 to the "packed routines.
  */
-static int
-PickSeparateCase(TIFFRGBAImage* img)
+static int PickSeparateCase(_Ptr<TIFFRGBAImage> img)
 {
 	img->get = TIFFIsTiled(img->tif) ? gtTileSeparate : gtStripSeparate;
 	img->put.separate = NULL;
@@ -2835,8 +2812,7 @@ PickSeparateCase(TIFFRGBAImage* img)
 	return ((img->get!=NULL) && (img->put.separate!=NULL));
 }
 
-static int
-BuildMapUaToAa(TIFFRGBAImage* img)
+static int BuildMapUaToAa(_Ptr<TIFFRGBAImage> img)
 {
 	static const char module[]="BuildMapUaToAa";
 	uint8* m;
@@ -2857,8 +2833,7 @@ BuildMapUaToAa(TIFFRGBAImage* img)
 	return(1);
 }
 
-static int
-BuildMapBitdepth16To8(TIFFRGBAImage* img)
+static int BuildMapBitdepth16To8(_Ptr<TIFFRGBAImage> img)
 {
 	static const char module[]="BuildMapBitdepth16To8";
 	uint8* m;
@@ -2885,19 +2860,17 @@ BuildMapBitdepth16To8(TIFFRGBAImage* img)
  */
 
 
-int
-TIFFReadRGBAStrip(TIFF* tif, uint32 row, uint32 * raster )
+int TIFFReadRGBAStrip(TIFF *tif, uint32 row, uint32 *raster)
 
 {
     return TIFFReadRGBAStripExt(tif, row, raster, 0 );
 }
 
-int
-TIFFReadRGBAStripExt(TIFF* tif, uint32 row, uint32 * raster, int stop_on_error)
+int TIFFReadRGBAStripExt(TIFF *tif, uint32 row, uint32 *raster, int stop_on_error)
 
 {
     char 	emsg[1024] = "";
-    TIFFRGBAImage img;
+    TIFFRGBAImage img = {};
     int 	ok;
     uint32	rowsperstrip, rows_to_read;
 
@@ -2943,19 +2916,17 @@ TIFFReadRGBAStripExt(TIFF* tif, uint32 row, uint32 * raster, int stop_on_error)
  * and may include zeroed areas if the tile extends off the image.
  */
 
-int
-TIFFReadRGBATile(TIFF* tif, uint32 col, uint32 row, uint32 * raster)
+int TIFFReadRGBATile(TIFF *tif, uint32 col, uint32 row, uint32 *raster)
 
 {
     return TIFFReadRGBATileExt(tif, col, row, raster, 0 );
 }
 
 
-int
-TIFFReadRGBATileExt(TIFF* tif, uint32 col, uint32 row, uint32 * raster, int stop_on_error )
+int TIFFReadRGBATileExt(TIFF *tif, uint32 col, uint32 row, uint32 *raster, int stop_on_error)
 {
     char 	emsg[1024] = "";
-    TIFFRGBAImage img;
+    TIFFRGBAImage img = {};
     int 	ok;
     uint32	tile_xsize, tile_ysize;
     uint32	read_xsize, read_ysize;

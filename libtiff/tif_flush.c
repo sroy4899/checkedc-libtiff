@@ -27,8 +27,7 @@
  */
 #include "tiffiop.h"
 
-int
-TIFFFlush(TIFF* tif)
+int TIFFFlush(TIFF *tif)
 {
     if( tif->tif_mode == O_RDONLY )
         return 1;
@@ -75,7 +74,7 @@ TIFFFlush(TIFF* tif)
  *
  * Returns 1 in case of success, 0 otherwise.
  */
-int TIFFForceStrileArrayWriting(TIFF* tif)
+int TIFFForceStrileArrayWriting(TIFF *tif)
 {
     static const char module[] = "TIFFForceStrileArrayWriting";
     const int isTiled = TIFFIsTiled(tif);
@@ -151,8 +150,7 @@ int TIFFForceStrileArrayWriting(TIFF* tif)
  * been writing isn't exactly a an error.  Hopefully this doesn't cause
  * problems for other people. 
  */
-int
-TIFFFlushData(TIFF* tif)
+int TIFFFlushData(TIFF *tif)
 {
 	if ((tif->tif_flags & TIFF_BEENWRITING) == 0)
 		return (1);

@@ -30,21 +30,18 @@
 /*
  * Dummy functions to fill the omitted client procedures.
  */
-static int
-_tiffDummyMapProc(thandle_t fd, void** pbase, toff_t* psize)
+static int _tiffDummyMapProc(thandle_t fd, void **pbase, toff_t *psize)
 {
 	(void) fd; (void) pbase; (void) psize;
 	return (0);
 }
 
-static void
-_tiffDummyUnmapProc(thandle_t fd, void* base, toff_t size)
+static void _tiffDummyUnmapProc(thandle_t fd, void *base, toff_t size)
 {
 	(void) fd; (void) base; (void) size;
 }
 
-int
-_TIFFgetMode(const char* mode, const char* module)
+int _TIFFgetMode(_Array_ptr<const char> mode, const char *module)
 {
 	int m = -1;
 
@@ -67,23 +64,12 @@ _TIFFgetMode(const char* mode, const char* module)
 	return (m);
 }
 
-TIFF*
-TIFFClientOpen(
-	const char* name, const char* mode,
-	thandle_t clientdata,
-	TIFFReadWriteProc readproc,
-	TIFFReadWriteProc writeproc,
-	TIFFSeekProc seekproc,
-	TIFFCloseProc closeproc,
-	TIFFSizeProc sizeproc,
-	TIFFMapFileProc mapproc,
-	TIFFUnmapFileProc unmapproc
-)
+TIFF * TIFFClientOpen(const char *name, _Array_ptr<const char> mode, thandle_t clientdata, _Ptr<tmsize_t (thandle_t , void *, tmsize_t )> readproc, _Ptr<tmsize_t (thandle_t , void *, tmsize_t )> writeproc, _Ptr<toff_t (thandle_t , toff_t , int )> seekproc, _Ptr<int (thandle_t )> closeproc, _Ptr<toff_t (thandle_t )> sizeproc, _Ptr<int (thandle_t , void **, toff_t *)> mapproc, _Ptr<void (thandle_t , void *, toff_t )> unmapproc)
 {
 	static const char module[] = "TIFFClientOpen";
 	TIFF *tif;
 	int m;
-	const char* cp;
+	_Array_ptr<const char> cp = ((void *)0);
 
 	/* The following are configuration checks. They should be redundant, but should not
 	 * compile to any actual code in an optimised release build anyway. If any of them
@@ -509,8 +495,7 @@ bad2:
 /*
  * Return open file's name.
  */
-const char *
-TIFFFileName(TIFF* tif)
+const char * TIFFFileName(TIFF *tif : itype(_Ptr<TIFF>))
 {
 	return (tif->tif_name);
 }
@@ -518,8 +503,7 @@ TIFFFileName(TIFF* tif)
 /*
  * Set the file name.
  */
-const char *
-TIFFSetFileName(TIFF* tif, const char *name)
+const char * TIFFSetFileName(_Ptr<TIFF> tif, const char *name)
 {
 	const char* old_name = tif->tif_name;
 	tif->tif_name = (char *)name;
@@ -529,8 +513,7 @@ TIFFSetFileName(TIFF* tif, const char *name)
 /*
  * Return open file's I/O descriptor.
  */
-int
-TIFFFileno(TIFF* tif)
+int TIFFFileno(_Ptr<TIFF> tif)
 {
 	return (tif->tif_fd);
 }
@@ -538,8 +521,7 @@ TIFFFileno(TIFF* tif)
 /*
  * Set open file's I/O descriptor, and return previous value.
  */
-int
-TIFFSetFileno(TIFF* tif, int fd)
+int TIFFSetFileno(_Ptr<TIFF> tif, int fd)
 {
         int old_fd = tif->tif_fd;
 	tif->tif_fd = fd;
@@ -549,8 +531,7 @@ TIFFSetFileno(TIFF* tif, int fd)
 /*
  * Return open file's clientdata.
  */
-thandle_t
-TIFFClientdata(TIFF* tif)
+thandle_t TIFFClientdata(_Ptr<TIFF> tif)
 {
 	return (tif->tif_clientdata);
 }
@@ -558,8 +539,7 @@ TIFFClientdata(TIFF* tif)
 /*
  * Set open file's clientdata, and return previous value.
  */
-thandle_t
-TIFFSetClientdata(TIFF* tif, thandle_t newvalue)
+thandle_t TIFFSetClientdata(_Ptr<TIFF> tif, thandle_t newvalue)
 {
 	thandle_t m = tif->tif_clientdata;
 	tif->tif_clientdata = newvalue;
@@ -569,8 +549,7 @@ TIFFSetClientdata(TIFF* tif, thandle_t newvalue)
 /*
  * Return read/write mode.
  */
-int
-TIFFGetMode(TIFF* tif)
+int TIFFGetMode(_Ptr<TIFF> tif)
 {
 	return (tif->tif_mode);
 }
@@ -578,8 +557,7 @@ TIFFGetMode(TIFF* tif)
 /*
  * Return read/write mode.
  */
-int
-TIFFSetMode(TIFF* tif, int mode)
+int TIFFSetMode(_Ptr<TIFF> tif, int mode)
 {
 	int old_mode = tif->tif_mode;
 	tif->tif_mode = mode;
@@ -590,8 +568,7 @@ TIFFSetMode(TIFF* tif, int mode)
  * Return nonzero if file is organized in
  * tiles; zero if organized as strips.
  */
-int
-TIFFIsTiled(TIFF* tif)
+int TIFFIsTiled(TIFF *tif : itype(_Ptr<TIFF>))
 {
 	return (isTiled(tif));
 }
@@ -599,8 +576,7 @@ TIFFIsTiled(TIFF* tif)
 /*
  * Return current row being read/written.
  */
-uint32
-TIFFCurrentRow(TIFF* tif)
+uint32 TIFFCurrentRow(_Ptr<TIFF> tif)
 {
 	return (tif->tif_row);
 }
@@ -608,8 +584,7 @@ TIFFCurrentRow(TIFF* tif)
 /*
  * Return index of the current directory.
  */
-uint16
-TIFFCurrentDirectory(TIFF* tif)
+uint16 TIFFCurrentDirectory(_Ptr<TIFF> tif)
 {
 	return (tif->tif_curdir);
 }
@@ -617,8 +592,7 @@ TIFFCurrentDirectory(TIFF* tif)
 /*
  * Return current strip.
  */
-uint32
-TIFFCurrentStrip(TIFF* tif)
+uint32 TIFFCurrentStrip(_Ptr<TIFF> tif)
 {
 	return (tif->tif_curstrip);
 }
@@ -626,8 +600,7 @@ TIFFCurrentStrip(TIFF* tif)
 /*
  * Return current tile.
  */
-uint32
-TIFFCurrentTile(TIFF* tif)
+uint32 TIFFCurrentTile(_Ptr<TIFF> tif)
 {
 	return (tif->tif_curtile);
 }
@@ -635,8 +608,7 @@ TIFFCurrentTile(TIFF* tif)
 /*
  * Return nonzero if the file has byte-swapped data.
  */
-int
-TIFFIsByteSwapped(TIFF* tif)
+int TIFFIsByteSwapped(_Ptr<TIFF> tif)
 {
 	return ((tif->tif_flags & TIFF_SWAB) != 0);
 }
@@ -644,8 +616,7 @@ TIFFIsByteSwapped(TIFF* tif)
 /*
  * Return nonzero if the data is returned up-sampled.
  */
-int
-TIFFIsUpSampled(TIFF* tif)
+int TIFFIsUpSampled(_Ptr<TIFF> tif)
 {
 	return (isUpSampled(tif));
 }
@@ -653,8 +624,7 @@ TIFFIsUpSampled(TIFF* tif)
 /*
  * Return nonzero if the data is returned in MSB-to-LSB bit order.
  */
-int
-TIFFIsMSB2LSB(TIFF* tif)
+int TIFFIsMSB2LSB(_Ptr<TIFF> tif)
 {
 	return (isFillOrder(tif, FILLORDER_MSB2LSB));
 }
@@ -662,8 +632,7 @@ TIFFIsMSB2LSB(TIFF* tif)
 /*
  * Return nonzero if given file was written in big-endian order.
  */
-int
-TIFFIsBigEndian(TIFF* tif)
+int TIFFIsBigEndian(_Ptr<TIFF> tif)
 {
 	return (tif->tif_header.common.tiff_magic == TIFF_BIGENDIAN);
 }
@@ -671,8 +640,7 @@ TIFFIsBigEndian(TIFF* tif)
 /*
  * Return pointer to file read method.
  */
-TIFFReadWriteProc
-TIFFGetReadProc(TIFF* tif)
+_Ptr<tmsize_t (thandle_t , void *, tmsize_t )> TIFFGetReadProc(_Ptr<TIFF> tif)
 {
 	return (tif->tif_readproc);
 }
@@ -680,8 +648,7 @@ TIFFGetReadProc(TIFF* tif)
 /*
  * Return pointer to file write method.
  */
-TIFFReadWriteProc
-TIFFGetWriteProc(TIFF* tif)
+_Ptr<tmsize_t (thandle_t , void *, tmsize_t )> TIFFGetWriteProc(_Ptr<TIFF> tif)
 {
 	return (tif->tif_writeproc);
 }
@@ -689,8 +656,7 @@ TIFFGetWriteProc(TIFF* tif)
 /*
  * Return pointer to file seek method.
  */
-TIFFSeekProc
-TIFFGetSeekProc(TIFF* tif)
+_Ptr<toff_t (thandle_t , toff_t , int )> TIFFGetSeekProc(_Ptr<TIFF> tif)
 {
 	return (tif->tif_seekproc);
 }
@@ -698,8 +664,7 @@ TIFFGetSeekProc(TIFF* tif)
 /*
  * Return pointer to file close method.
  */
-TIFFCloseProc
-TIFFGetCloseProc(TIFF* tif)
+_Ptr<int (thandle_t )> TIFFGetCloseProc(_Ptr<TIFF> tif)
 {
 	return (tif->tif_closeproc);
 }
@@ -707,8 +672,7 @@ TIFFGetCloseProc(TIFF* tif)
 /*
  * Return pointer to file size requesting method.
  */
-TIFFSizeProc
-TIFFGetSizeProc(TIFF* tif)
+_Ptr<toff_t (thandle_t )> TIFFGetSizeProc(_Ptr<TIFF> tif)
 {
 	return (tif->tif_sizeproc);
 }
@@ -716,8 +680,7 @@ TIFFGetSizeProc(TIFF* tif)
 /*
  * Return pointer to memory mapping method.
  */
-TIFFMapFileProc
-TIFFGetMapFileProc(TIFF* tif)
+_Ptr<int (thandle_t , void **, toff_t *)> TIFFGetMapFileProc(_Ptr<TIFF> tif)
 {
 	return (tif->tif_mapproc);
 }
@@ -725,8 +688,7 @@ TIFFGetMapFileProc(TIFF* tif)
 /*
  * Return pointer to memory unmapping method.
  */
-TIFFUnmapFileProc
-TIFFGetUnmapFileProc(TIFF* tif)
+_Ptr<void (thandle_t , void *, toff_t )> TIFFGetUnmapFileProc(_Ptr<TIFF> tif)
 {
 	return (tif->tif_unmapproc);
 }

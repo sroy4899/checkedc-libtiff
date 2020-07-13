@@ -51,8 +51,8 @@
 #define	    DELTA3_SKIP		4	/* skip code for 3-bit deltas */
 #define	THUNDER_RAW		0xc0	/* raw data encoded */
 
-static const int twobitdeltas[4] = { 0, 1, 0, -1 };
-static const int threebitdeltas[8] = { 0, 1, 2, 3, 0, -3, -2, -1 };
+static const int twobitdeltas _Checked[4] =  { 0, 1, 0, -1 };
+static const int threebitdeltas _Checked[8] =  { 0, 1, 2, 3, 0, -3, -2, -1 };
 
 #define	SETPIXEL(op, v) {                     \
 	lastpixel = (v) & 0xf;                \
@@ -65,8 +65,7 @@ static const int threebitdeltas[8] = { 0, 1, 2, 3, 0, -3, -2, -1 };
         }                                     \
 }
 
-static int
-ThunderSetupDecode(TIFF* tif)
+static int ThunderSetupDecode(TIFF *tif)
 {
 	static const char module[] = "ThunderSetupDecode";
 
@@ -82,8 +81,7 @@ ThunderSetupDecode(TIFF* tif)
 	return (1);
 }
 
-static int
-ThunderDecode(TIFF* tif, uint8* op, tmsize_t maxpixels)
+static int ThunderDecode(TIFF *tif, uint8 *op : itype(_Array_ptr<uint8>), tmsize_t maxpixels)
 {
 	static const char module[] = "ThunderDecode";
 	register unsigned char *bp;
@@ -163,8 +161,7 @@ ThunderDecode(TIFF* tif, uint8* op, tmsize_t maxpixels)
         return (1);
 }
 
-static int
-ThunderDecodeRow(TIFF* tif, uint8* buf, tmsize_t occ, uint16 s)
+static int ThunderDecodeRow(TIFF *tif, uint8 *buf, tmsize_t occ, uint16 s)
 {
 	static const char module[] = "ThunderDecodeRow";
 	uint8* row = buf;
@@ -184,8 +181,7 @@ ThunderDecodeRow(TIFF* tif, uint8* buf, tmsize_t occ, uint16 s)
 	return (1);
 }
 
-int
-TIFFInitThunderScan(TIFF* tif, int scheme)
+int TIFFInitThunderScan(TIFF *tif, int scheme)
 {
 	(void) scheme;
 

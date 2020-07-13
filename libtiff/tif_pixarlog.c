@@ -108,9 +108,7 @@ static float  LogK1, LogK2;
 
 #define REPEAT(n, op)   { int i; i=n; do { i--; op; } while (i>0); }
 
-static void
-horizontalAccumulateF(uint16 *wp, int n, int stride, float *op,
-	float *ToLinearF)
+static void horizontalAccumulateF(uint16 *wp : itype(_Array_ptr<uint16>) count(n), int n, int stride, float *op : itype(_Array_ptr<float>), float *ToLinearF : itype(_Array_ptr<float>))
 {
     register unsigned int  cr, cg, cb, ca, mask;
     register float  t0, t1, t2, t3;
@@ -171,9 +169,7 @@ horizontalAccumulateF(uint16 *wp, int n, int stride, float *op,
     }
 }
 
-static void
-horizontalAccumulate12(uint16 *wp, int n, int stride, int16 *op,
-	float *ToLinearF)
+static void horizontalAccumulate12(uint16 *wp : itype(_Array_ptr<uint16>) count(n), int n, int stride, int16 *op : itype(_Array_ptr<int16>), float *ToLinearF : itype(_Array_ptr<float>))
 {
     register unsigned int  cr, cg, cb, ca, mask;
     register float  t0, t1, t2, t3;
@@ -239,9 +235,7 @@ horizontalAccumulate12(uint16 *wp, int n, int stride, int16 *op,
     }
 }
 
-static void
-horizontalAccumulate16(uint16 *wp, int n, int stride, uint16 *op,
-	uint16 *ToLinear16)
+static void horizontalAccumulate16(uint16 *wp : itype(_Array_ptr<uint16>) count(n), int n, int stride, uint16 *op : itype(_Array_ptr<uint16>), uint16 *ToLinear16 : itype(_Array_ptr<uint16>))
 {
     register unsigned int  cr, cg, cb, ca, mask;
 
@@ -291,8 +285,7 @@ horizontalAccumulate16(uint16 *wp, int n, int stride, uint16 *op,
  * Returns the log encoded 11-bit values with the horizontal
  * differencing undone.
  */
-static void
-horizontalAccumulate11(uint16 *wp, int n, int stride, uint16 *op)
+static void horizontalAccumulate11(uint16 *wp : itype(_Array_ptr<uint16>) count(n), int n, int stride, uint16 *op : itype(_Array_ptr<uint16>))
 {
     register unsigned int cr, cg, cb, ca, mask;
 
@@ -336,9 +329,7 @@ horizontalAccumulate11(uint16 *wp, int n, int stride, uint16 *op)
     }
 }
 
-static void
-horizontalAccumulate8(uint16 *wp, int n, int stride, unsigned char *op,
-	unsigned char *ToLinear8)
+static void horizontalAccumulate8(uint16 *wp : itype(_Array_ptr<uint16>) count(n), int n, int stride, unsigned char *op, unsigned char *ToLinear8 : itype(_Array_ptr<unsigned char>))
 {
     register unsigned int  cr, cg, cb, ca, mask;
 
@@ -385,9 +376,7 @@ horizontalAccumulate8(uint16 *wp, int n, int stride, unsigned char *op,
 }
 
 
-static void
-horizontalAccumulate8abgr(uint16 *wp, int n, int stride, unsigned char *op,
-	unsigned char *ToLinear8)
+static void horizontalAccumulate8abgr(uint16 *wp : itype(_Array_ptr<uint16>) count(n), int n, int stride, unsigned char *op, unsigned char *ToLinear8 : itype(_Array_ptr<unsigned char>))
 {
     register unsigned int  cr, cg, cb, ca, mask;
     register unsigned char  t0, t1, t2, t3;
@@ -465,8 +454,8 @@ typedef	struct {
 	int			quality;
 #define PLSTATE_INIT 1
 
-	TIFFVSetMethod		vgetparent;	/* super-class method */
-	TIFFVSetMethod		vsetparent;	/* super-class method */
+	_Ptr<int (TIFF *, uint32 , struct __va_list_tag *)> vgetparent;	/* super-class method */
+	_Ptr<int (TIFF *, uint32 , struct __va_list_tag *)> vsetparent;	/* super-class method */
 
 	float *ToLinearF;
 	uint16 *ToLinear16;
@@ -477,8 +466,7 @@ typedef	struct {
 	
 } PixarLogState;
 
-static int
-PixarLogMakeTables(PixarLogState *sp)
+static int PixarLogMakeTables(PixarLogState *sp : itype(_Ptr<PixarLogState>))
 {
 
 /*
@@ -594,13 +582,12 @@ PixarLogMakeTables(PixarLogState *sp)
 #define DecoderState(tif)	((PixarLogState*) (tif)->tif_data)
 #define EncoderState(tif)	((PixarLogState*) (tif)->tif_data)
 
-static int PixarLogEncode(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s);
-static int PixarLogDecode(TIFF* tif, uint8* op, tmsize_t occ, uint16 s);
+static int PixarLogEncode(TIFF *tif, uint8 *bp, tmsize_t cc, uint16 s);
+static int PixarLogDecode(TIFF *tif, uint8 *op, tmsize_t occ, uint16 s);
 
 #define PIXARLOGDATAFMT_UNKNOWN	-1
 
-static int
-PixarLogGuessDataFmt(TIFFDirectory *td)
+static int PixarLogGuessDataFmt(_Ptr<TIFFDirectory> td)
 {
 	int guess = PIXARLOGDATAFMT_UNKNOWN;
 	int format = td->td_sampleformat;
@@ -634,14 +621,12 @@ PixarLogGuessDataFmt(TIFFDirectory *td)
 	return guess;
 }
 
-static tmsize_t
-multiply_ms(tmsize_t m1, tmsize_t m2)
+static tmsize_t multiply_ms(tmsize_t m1, tmsize_t m2)
 {
         return _TIFFMultiplySSize(NULL, m1, m2, NULL);
 }
 
-static tmsize_t
-add_ms(tmsize_t m1, tmsize_t m2)
+static tmsize_t add_ms(tmsize_t m1, tmsize_t m2)
 {
         assert(m1 >= 0 && m2 >= 0);
 	/* if either input is zero, assume overflow already occurred */
@@ -653,18 +638,16 @@ add_ms(tmsize_t m1, tmsize_t m2)
 	return m1 + m2;
 }
 
-static int
-PixarLogFixupTags(TIFF* tif)
+static int PixarLogFixupTags(TIFF *tif)
 {
 	(void) tif;
 	return (1);
 }
 
-static int
-PixarLogSetupDecode(TIFF* tif)
+static int PixarLogSetupDecode(TIFF *tif)
 {
 	static const char module[] = "PixarLogSetupDecode";
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	PixarLogState* sp = DecoderState(tif);
 	tmsize_t tbuf_size;
         uint32 strip_height;
@@ -726,8 +709,7 @@ PixarLogSetupDecode(TIFF* tif)
 /*
  * Setup state for decoding a strip.
  */
-static int
-PixarLogPreDecode(TIFF* tif, uint16 s)
+static int PixarLogPreDecode(TIFF *tif, uint16 s)
 {
 	static const char module[] = "PixarLogPreDecode";
 	PixarLogState* sp = DecoderState(tif);
@@ -748,11 +730,10 @@ PixarLogPreDecode(TIFF* tif, uint16 s)
 	return (inflateReset(&sp->stream) == Z_OK);
 }
 
-static int
-PixarLogDecode(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
+static int PixarLogDecode(TIFF *tif, uint8 *op, tmsize_t occ, uint16 s)
 {
 	static const char module[] = "PixarLogDecode";
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	PixarLogState* sp = DecoderState(tif);
 	tmsize_t i;
 	tmsize_t nsamples;
@@ -893,11 +874,10 @@ PixarLogDecode(TIFF* tif, uint8* op, tmsize_t occ, uint16 s)
 	return (1);
 }
 
-static int
-PixarLogSetupEncode(TIFF* tif)
+static int PixarLogSetupEncode(TIFF *tif)
 {
 	static const char module[] = "PixarLogSetupEncode";
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	PixarLogState* sp = EncoderState(tif);
 	tmsize_t tbuf_size;
 
@@ -933,8 +913,7 @@ PixarLogSetupEncode(TIFF* tif)
 /*
  * Reset encoding state at the start of a strip.
  */
-static int
-PixarLogPreEncode(TIFF* tif, uint16 s)
+static int PixarLogPreEncode(TIFF *tif, uint16 s)
 {
 	static const char module[] = "PixarLogPreEncode";
 	PixarLogState *sp = EncoderState(tif);
@@ -955,8 +934,7 @@ PixarLogPreEncode(TIFF* tif, uint16 s)
 	return (deflateReset(&sp->stream) == Z_OK);
 }
 
-static void
-horizontalDifferenceF(float *ip, int n, int stride, uint16 *wp, uint16 *FromLT2)
+static void horizontalDifferenceF(float *ip : itype(_Array_ptr<float>) count(n), int n, int stride, uint16 *wp : itype(_Array_ptr<uint16>), uint16 *FromLT2 : itype(_Array_ptr<uint16>))
 {
     int32 r1, g1, b1, a1, r2, g2, b2, a2, mask;
     float fltsize = Fltsize;
@@ -1009,9 +987,7 @@ horizontalDifferenceF(float *ip, int n, int stride, uint16 *wp, uint16 *FromLT2)
     }
 }
 
-static void
-horizontalDifference16(unsigned short *ip, int n, int stride, 
-	unsigned short *wp, uint16 *From14)
+static void horizontalDifference16(unsigned short *ip : itype(_Array_ptr<unsigned short>) count(n), int n, int stride, unsigned short *wp : itype(_Array_ptr<unsigned short>), uint16 *From14 : itype(_Array_ptr<uint16>))
 {
     register int  r1, g1, b1, a1, r2, g2, b2, a2, mask;
 
@@ -1060,9 +1036,7 @@ horizontalDifference16(unsigned short *ip, int n, int stride,
 }
 
 
-static void
-horizontalDifference8(unsigned char *ip, int n, int stride, 
-	unsigned short *wp, uint16 *From8)
+static void horizontalDifference8(unsigned char *ip, int n, int stride, unsigned short *wp : itype(_Array_ptr<unsigned short>), uint16 *From8 : itype(_Array_ptr<uint16>))
 {
     register int  r1, g1, b1, a1, r2, g2, b2, a2, mask;
 
@@ -1112,11 +1086,10 @@ horizontalDifference8(unsigned char *ip, int n, int stride,
 /*
  * Encode a chunk of pixels.
  */
-static int
-PixarLogEncode(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
+static int PixarLogEncode(TIFF *tif, uint8 *bp, tmsize_t cc, uint16 s)
 {
 	static const char module[] = "PixarLogEncode";
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 	PixarLogState *sp = EncoderState(tif);
 	tmsize_t i;
 	tmsize_t n;
@@ -1213,8 +1186,7 @@ PixarLogEncode(TIFF* tif, uint8* bp, tmsize_t cc, uint16 s)
  * string and tacking on an End Of Information code.
  */
 
-static int
-PixarLogPostEncode(TIFF* tif)
+static int PixarLogPostEncode(TIFF *tif)
 {
 	static const char module[] = "PixarLogPostEncode";
 	PixarLogState *sp = EncoderState(tif);
@@ -1244,11 +1216,10 @@ PixarLogPostEncode(TIFF* tif)
 	return (1);
 }
 
-static void
-PixarLogClose(TIFF* tif)
+static void PixarLogClose(TIFF *tif)
 {
         PixarLogState* sp = (PixarLogState*) tif->tif_data;
-	TIFFDirectory *td = &tif->tif_dir;
+	_Ptr<TIFFDirectory> td =  &tif->tif_dir;
 
 	assert(sp != 0);
 	/* In a really sneaky (and really incorrect, and untruthful, and
@@ -1274,8 +1245,7 @@ PixarLogClose(TIFF* tif)
         }
 }
 
-static void
-PixarLogCleanup(TIFF* tif)
+static void PixarLogCleanup(TIFF *tif)
 {
 	PixarLogState* sp = (PixarLogState*) tif->tif_data;
 
@@ -1306,8 +1276,7 @@ PixarLogCleanup(TIFF* tif)
 	_TIFFSetDefaultCompressionState(tif);
 }
 
-static int
-PixarLogVSetField(TIFF* tif, uint32 tag, va_list ap)
+static int PixarLogVSetField(TIFF *tif, uint32 tag, va_list ap)
 {
     static const char module[] = "PixarLogVSetField";
     PixarLogState *sp = (PixarLogState *)tif->tif_data;
@@ -1368,8 +1337,7 @@ PixarLogVSetField(TIFF* tif, uint32 tag, va_list ap)
     return (result);
 }
 
-static int
-PixarLogVGetField(TIFF* tif, uint32 tag, va_list ap)
+static int PixarLogVGetField(TIFF *tif, uint32 tag, va_list ap)
 {
     PixarLogState *sp = (PixarLogState *)tif->tif_data;
 
@@ -1391,8 +1359,7 @@ static const TIFFField pixarlogFields[] = {
     {TIFFTAG_PIXARLOGQUALITY, 0, 0, TIFF_ANY, 0, TIFF_SETGET_INT, TIFF_SETGET_UNDEFINED, FIELD_PSEUDO, FALSE, FALSE, "", NULL}
 };
 
-int
-TIFFInitPixarLog(TIFF* tif, int scheme)
+int TIFFInitPixarLog(TIFF *tif, int scheme)
 {
 	static const char module[] = "TIFFInitPixarLog";
 

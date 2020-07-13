@@ -247,9 +247,9 @@ typedef struct {
 	#ifndef LIBJPEG_ENCAP_EXTERNAL
 	JMP_BUF exit_jmpbuf;
 	#endif
-	TIFFVGetMethod vgetparent;
-	TIFFVSetMethod vsetparent;
-	TIFFPrintMethod printdir;
+	_Ptr<int (TIFF *, uint32 , struct __va_list_tag *)> vgetparent;
+	_Ptr<int (TIFF *, uint32 , struct __va_list_tag *)> vsetparent;
+	_Ptr<void (TIFF *, FILE *, long )> printdir;
 	uint64 file_size;
 	uint32 image_width;
 	uint32 image_length;
@@ -271,30 +271,24 @@ typedef struct {
 	uint8 qtable_offset_count;
 	uint8 dctable_offset_count;
 	uint8 actable_offset_count;
-	uint64 qtable_offset[3];
-	uint64 dctable_offset[3];
-	uint64 actable_offset[3];
-	uint8* qtable[4];
-	uint8* dctable[4];
-	uint8* actable[4];
+	uint64 qtable_offset _Checked[3];
+	uint64 dctable_offset _Checked[3];
+	uint64 actable_offset _Checked[3];
+	uint8* qtable _Checked[4];
+	uint8* dctable _Checked[4];
+	uint8* actable _Checked[4];
 	uint16 restart_interval;
 	uint8 restart_index;
 	uint8 sof_log;
 	uint8 sof_marker_id;
 	uint32 sof_x;
 	uint32 sof_y;
-	uint8 sof_c[3];
-	uint8 sof_hv[3];
-	uint8 sof_tq[3];
-	uint8 sos_cs[3];
-	uint8 sos_tda[3];
-	struct {
-		uint8 log;
-		OJPEGStateInBufferSource in_buffer_source;
-		uint32 in_buffer_next_strile;
-		uint64 in_buffer_file_pos;
-		uint64 in_buffer_file_togo;
-	} sos_end[3];
+	uint8 sof_c _Checked[3];
+	uint8 sof_hv _Checked[3];
+	uint8 sof_tq _Checked[3];
+	uint8 sos_cs _Checked[3];
+	uint8 sos_tda _Checked[3];
+	struct (anonymous struct at tif_ojpeg.c:291:2) sos_end _Checked[3];
 	uint8 readheader_done;
 	uint8 writeheader_done;
 	uint16 write_cursample;
@@ -336,60 +330,60 @@ typedef struct {
 	uint8* skip_buffer;
 } OJPEGState;
 
-static int OJPEGVGetField(TIFF* tif, uint32 tag, va_list ap);
-static int OJPEGVSetField(TIFF* tif, uint32 tag, va_list ap);
-static void OJPEGPrintDir(TIFF* tif, FILE* fd, long flags);
+static int OJPEGVGetField(TIFF *tif, uint32 tag, va_list ap);
+static int OJPEGVSetField(TIFF *tif, uint32 tag, va_list ap);
+static void OJPEGPrintDir(TIFF *tif, FILE *fd, long flags);
 
-static int OJPEGFixupTags(TIFF* tif);
-static int OJPEGSetupDecode(TIFF* tif);
-static int OJPEGPreDecode(TIFF* tif, uint16 s);
-static int OJPEGPreDecodeSkipRaw(TIFF* tif);
-static int OJPEGPreDecodeSkipScanlines(TIFF* tif);
-static int OJPEGDecode(TIFF* tif, uint8* buf, tmsize_t cc, uint16 s);
-static int OJPEGDecodeRaw(TIFF* tif, uint8* buf, tmsize_t cc);
-static int OJPEGDecodeScanlines(TIFF* tif, uint8* buf, tmsize_t cc);
-static void OJPEGPostDecode(TIFF* tif, uint8* buf, tmsize_t cc);
-static int OJPEGSetupEncode(TIFF* tif);
-static int OJPEGPreEncode(TIFF* tif, uint16 s);
-static int OJPEGEncode(TIFF* tif, uint8* buf, tmsize_t cc, uint16 s);
-static int OJPEGPostEncode(TIFF* tif);
-static void OJPEGCleanup(TIFF* tif);
+static int OJPEGFixupTags(TIFF *tif);
+static int OJPEGSetupDecode(TIFF *tif);
+static int OJPEGPreDecode(TIFF *tif, uint16 s);
+static int OJPEGPreDecodeSkipRaw(TIFF *tif : itype(_Ptr<TIFF>));
+static int OJPEGPreDecodeSkipScanlines(TIFF *tif : itype(_Ptr<TIFF>));
+static int OJPEGDecode(TIFF *tif, uint8 *buf, tmsize_t cc, uint16 s);
+static int OJPEGDecodeRaw(TIFF *tif : itype(_Ptr<TIFF>), uint8 *buf : itype(_Array_ptr<uint8>) count(cc), tmsize_t cc);
+static int OJPEGDecodeScanlines(TIFF *tif : itype(_Ptr<TIFF>), uint8 *buf : itype(_Array_ptr<uint8>) count(cc), tmsize_t cc);
+static void OJPEGPostDecode(TIFF *tif, uint8 *buf, tmsize_t cc);
+static int OJPEGSetupEncode(TIFF *tif);
+static int OJPEGPreEncode(TIFF *tif, uint16 s);
+static int OJPEGEncode(TIFF *tif, uint8 *buf, tmsize_t cc, uint16 s);
+static int OJPEGPostEncode(TIFF *tif);
+static void OJPEGCleanup(TIFF *tif);
 
-static void OJPEGSubsamplingCorrect(TIFF* tif);
-static int OJPEGReadHeaderInfo(TIFF* tif);
-static int OJPEGReadSecondarySos(TIFF* tif, uint16 s);
-static int OJPEGWriteHeaderInfo(TIFF* tif);
-static void OJPEGLibjpegSessionAbort(TIFF* tif);
+static void OJPEGSubsamplingCorrect(TIFF *tif : itype(_Ptr<TIFF>));
+static int OJPEGReadHeaderInfo(TIFF *tif : itype(_Ptr<TIFF>));
+static int OJPEGReadSecondarySos(TIFF *tif : itype(_Ptr<TIFF>), uint16 s);
+static int OJPEGWriteHeaderInfo(TIFF *tif : itype(_Ptr<TIFF>));
+static void OJPEGLibjpegSessionAbort(TIFF *tif : itype(_Ptr<TIFF>));
 
-static int OJPEGReadHeaderInfoSec(TIFF* tif);
-static int OJPEGReadHeaderInfoSecStreamDri(TIFF* tif);
-static int OJPEGReadHeaderInfoSecStreamDqt(TIFF* tif);
-static int OJPEGReadHeaderInfoSecStreamDht(TIFF* tif);
-static int OJPEGReadHeaderInfoSecStreamSof(TIFF* tif, uint8 marker_id);
-static int OJPEGReadHeaderInfoSecStreamSos(TIFF* tif);
-static int OJPEGReadHeaderInfoSecTablesQTable(TIFF* tif);
-static int OJPEGReadHeaderInfoSecTablesDcTable(TIFF* tif);
-static int OJPEGReadHeaderInfoSecTablesAcTable(TIFF* tif);
+static int OJPEGReadHeaderInfoSec(_Ptr<TIFF> tif);
+static int OJPEGReadHeaderInfoSecStreamDri(_Ptr<TIFF> tif);
+static int OJPEGReadHeaderInfoSecStreamDqt(_Ptr<TIFF> tif);
+static int OJPEGReadHeaderInfoSecStreamDht(_Ptr<TIFF> tif);
+static int OJPEGReadHeaderInfoSecStreamSof(_Ptr<TIFF> tif, uint8 marker_id);
+static int OJPEGReadHeaderInfoSecStreamSos(_Ptr<TIFF> tif);
+static int OJPEGReadHeaderInfoSecTablesQTable(_Ptr<TIFF> tif);
+static int OJPEGReadHeaderInfoSecTablesDcTable(_Ptr<TIFF> tif);
+static int OJPEGReadHeaderInfoSecTablesAcTable(_Ptr<TIFF> tif);
 
-static int OJPEGReadBufferFill(OJPEGState* sp);
-static int OJPEGReadByte(OJPEGState* sp, uint8* byte);
-static int OJPEGReadBytePeek(OJPEGState* sp, uint8* byte);
-static void OJPEGReadByteAdvance(OJPEGState* sp);
-static int OJPEGReadWord(OJPEGState* sp, uint16* word);
-static int OJPEGReadBlock(OJPEGState* sp, uint16 len, void* mem);
-static void OJPEGReadSkip(OJPEGState* sp, uint16 len);
+static int OJPEGReadBufferFill(OJPEGState *sp : itype(_Ptr<OJPEGState>));
+static int OJPEGReadByte(OJPEGState *sp : itype(_Ptr<OJPEGState>), _Ptr<uint8> byte);
+static int OJPEGReadBytePeek(OJPEGState *sp : itype(_Ptr<OJPEGState>), _Ptr<uint8> byte);
+static void OJPEGReadByteAdvance(OJPEGState *sp : itype(_Ptr<OJPEGState>));
+static int OJPEGReadWord(OJPEGState *sp : itype(_Ptr<OJPEGState>), _Ptr<uint16> word);
+static int OJPEGReadBlock(OJPEGState *sp : itype(_Ptr<OJPEGState>), uint16 len, void *mem);
+static void OJPEGReadSkip(OJPEGState *sp : itype(_Ptr<OJPEGState>), uint16 len);
 
-static int OJPEGWriteStream(TIFF* tif, void** mem, uint32* len);
-static void OJPEGWriteStreamSoi(TIFF* tif, void** mem, uint32* len);
-static void OJPEGWriteStreamQTable(TIFF* tif, uint8 table_index, void** mem, uint32* len);
-static void OJPEGWriteStreamDcTable(TIFF* tif, uint8 table_index, void** mem, uint32* len);
-static void OJPEGWriteStreamAcTable(TIFF* tif, uint8 table_index, void** mem, uint32* len);
-static void OJPEGWriteStreamDri(TIFF* tif, void** mem, uint32* len);
-static void OJPEGWriteStreamSof(TIFF* tif, void** mem, uint32* len);
-static void OJPEGWriteStreamSos(TIFF* tif, void** mem, uint32* len);
-static int OJPEGWriteStreamCompressed(TIFF* tif, void** mem, uint32* len);
-static void OJPEGWriteStreamRst(TIFF* tif, void** mem, uint32* len);
-static void OJPEGWriteStreamEoi(TIFF* tif, void** mem, uint32* len);
+static int OJPEGWriteStream(_Ptr<TIFF> tif, void **mem, _Ptr<uint32> len);
+static void OJPEGWriteStreamSoi(_Ptr<TIFF> tif, void **mem, _Ptr<uint32> len);
+static void OJPEGWriteStreamQTable(_Ptr<TIFF> tif, uint8 table_index, void **mem, _Ptr<uint32> len);
+static void OJPEGWriteStreamDcTable(_Ptr<TIFF> tif, uint8 table_index, void **mem, _Ptr<uint32> len);
+static void OJPEGWriteStreamAcTable(_Ptr<TIFF> tif, uint8 table_index, void **mem, _Ptr<uint32> len);
+static void OJPEGWriteStreamDri(_Ptr<TIFF> tif, void **mem, _Ptr<uint32> len);
+static void OJPEGWriteStreamSof(_Ptr<TIFF> tif, void **mem, _Ptr<uint32> len);
+static void OJPEGWriteStreamSos(_Ptr<TIFF> tif, void **mem, _Ptr<uint32> len);
+static int OJPEGWriteStreamCompressed(_Ptr<TIFF> tif, void **mem, _Ptr<uint32> len);
+static void OJPEGWriteStreamRst(_Ptr<TIFF> tif, void **mem, _Ptr<uint32> len);
+static void OJPEGWriteStreamEoi(_Ptr<TIFF> tif, void **mem, _Ptr<uint32> len);
 
 #ifdef LIBJPEG_ENCAP_EXTERNAL
 extern int jpeg_create_decompress_encap(OJPEGState* sp, jpeg_decompress_struct* cinfo);
@@ -399,24 +393,23 @@ extern int jpeg_read_scanlines_encap(OJPEGState* sp, jpeg_decompress_struct* cin
 extern int jpeg_read_raw_data_encap(OJPEGState* sp, jpeg_decompress_struct* cinfo, void* data, uint32 max_lines);
 extern void jpeg_encap_unwind(TIFF* tif);
 #else
-static int jpeg_create_decompress_encap(OJPEGState* sp, jpeg_decompress_struct* j);
-static int jpeg_read_header_encap(OJPEGState* sp, jpeg_decompress_struct* cinfo, uint8 require_image);
-static int jpeg_start_decompress_encap(OJPEGState* sp, jpeg_decompress_struct* cinfo);
-static int jpeg_read_scanlines_encap(OJPEGState* sp, jpeg_decompress_struct* cinfo, void* scanlines, uint32 max_lines);
-static int jpeg_read_raw_data_encap(OJPEGState* sp, jpeg_decompress_struct* cinfo, void* data, uint32 max_lines);
-static void jpeg_encap_unwind(TIFF* tif);
+static int jpeg_create_decompress_encap(_Ptr<OJPEGState> sp, _Ptr<jpeg_decompress_struct> cinfo);
+static int jpeg_read_header_encap(_Ptr<OJPEGState> sp, _Ptr<jpeg_decompress_struct> cinfo, uint8 require_image);
+static int jpeg_start_decompress_encap(_Ptr<OJPEGState> sp, _Ptr<jpeg_decompress_struct> cinfo);
+static int jpeg_read_scanlines_encap(_Ptr<OJPEGState> sp, _Ptr<jpeg_decompress_struct> cinfo, void *scanlines, uint32 max_lines);
+static int jpeg_read_raw_data_encap(_Ptr<OJPEGState> sp, _Ptr<jpeg_decompress_struct> cinfo, void *data, uint32 max_lines);
+static void jpeg_encap_unwind(_Ptr<TIFF> tif);
 #endif
 
-static void OJPEGLibjpegJpegErrorMgrOutputMessage(jpeg_common_struct* cinfo);
-static void OJPEGLibjpegJpegErrorMgrErrorExit(jpeg_common_struct* cinfo);
-static void OJPEGLibjpegJpegSourceMgrInitSource(jpeg_decompress_struct* cinfo);
-static boolean OJPEGLibjpegJpegSourceMgrFillInputBuffer(jpeg_decompress_struct* cinfo);
-static void OJPEGLibjpegJpegSourceMgrSkipInputData(jpeg_decompress_struct* cinfo, long num_bytes);
-static boolean OJPEGLibjpegJpegSourceMgrResyncToRestart(jpeg_decompress_struct* cinfo, int desired);
-static void OJPEGLibjpegJpegSourceMgrTermSource(jpeg_decompress_struct* cinfo);
+static void OJPEGLibjpegJpegErrorMgrOutputMessage(_Ptr<jpeg_common_struct> cinfo);
+static void OJPEGLibjpegJpegErrorMgrErrorExit(_Ptr<jpeg_common_struct> cinfo);
+static void OJPEGLibjpegJpegSourceMgrInitSource(_Ptr<jpeg_decompress_struct> cinfo);
+static int OJPEGLibjpegJpegSourceMgrFillInputBuffer(_Ptr<jpeg_decompress_struct> cinfo);
+static void OJPEGLibjpegJpegSourceMgrSkipInputData(_Ptr<jpeg_decompress_struct> cinfo, long num_bytes);
+static int OJPEGLibjpegJpegSourceMgrResyncToRestart(_Ptr<jpeg_decompress_struct> cinfo, int desired);
+static void OJPEGLibjpegJpegSourceMgrTermSource(_Ptr<jpeg_decompress_struct> cinfo);
 
-int
-TIFFInitOJPEG(TIFF* tif, int scheme)
+int TIFFInitOJPEG(TIFF *tif, int scheme)
 {
 	static const char module[]="TIFFInitOJPEG";
 	OJPEGState* sp;
@@ -478,8 +471,7 @@ TIFFInitOJPEG(TIFF* tif, int scheme)
 	return(1);
 }
 
-static int
-OJPEGVGetField(TIFF* tif, uint32 tag, va_list ap)
+static int OJPEGVGetField(TIFF *tif, uint32 tag, va_list ap)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	switch(tag)
@@ -520,13 +512,12 @@ OJPEGVGetField(TIFF* tif, uint32 tag, va_list ap)
 	return (1);
 }
 
-static int
-OJPEGVSetField(TIFF* tif, uint32 tag, va_list ap)
+static int OJPEGVSetField(TIFF *tif, uint32 tag, va_list ap)
 {
 	static const char module[]="OJPEGVSetField";
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	uint32 ma;
-	uint64* mb;
+	_Array_ptr<uint64> mb = ((void *)0);
 	uint32 n;
 	const TIFFField* fip;
 
@@ -607,8 +598,7 @@ OJPEGVSetField(TIFF* tif, uint32 tag, va_list ap)
 	return(1);
 }
 
-static void
-OJPEGPrintDir(TIFF* tif, FILE* fd, long flags)
+static void OJPEGPrintDir(TIFF *tif, FILE *fd, long flags)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	uint8 m;
@@ -647,23 +637,20 @@ OJPEGPrintDir(TIFF* tif, FILE* fd, long flags)
 		(*sp->printdir)(tif, fd, flags);
 }
 
-static int
-OJPEGFixupTags(TIFF* tif)
+static int OJPEGFixupTags(TIFF *tif)
 {
 	(void) tif;
 	return(1);
 }
 
-static int
-OJPEGSetupDecode(TIFF* tif)
+static int OJPEGSetupDecode(TIFF *tif)
 {
 	static const char module[]="OJPEGSetupDecode";
 	TIFFWarningExt(tif->tif_clientdata,module,"Depreciated and troublesome old-style JPEG compression mode, please convert to new-style JPEG compression and notify vendor of writing software");
 	return(1);
 }
 
-static int
-OJPEGPreDecode(TIFF* tif, uint16 s)
+static int OJPEGPreDecode(TIFF *tif, uint16 s)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	uint32 m;
@@ -726,8 +713,7 @@ OJPEGPreDecode(TIFF* tif, uint16 s)
 	return(1);
 }
 
-static int
-OJPEGPreDecodeSkipRaw(TIFF* tif)
+static int OJPEGPreDecodeSkipRaw(TIFF *tif : itype(_Ptr<TIFF>))
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	uint32 m;
@@ -760,8 +746,7 @@ OJPEGPreDecodeSkipRaw(TIFF* tif)
 	return(1);
 }
 
-static int
-OJPEGPreDecodeSkipScanlines(TIFF* tif)
+static int OJPEGPreDecodeSkipScanlines(TIFF *tif : itype(_Ptr<TIFF>))
 {
 	static const char module[]="OJPEGPreDecodeSkipScanlines";
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
@@ -783,8 +768,7 @@ OJPEGPreDecodeSkipScanlines(TIFF* tif)
 	return(1);
 }
 
-static int
-OJPEGDecode(TIFF* tif, uint8* buf, tmsize_t cc, uint16 s)
+static int OJPEGDecode(TIFF *tif, uint8 *buf, tmsize_t cc, uint16 s)
 {
         static const char module[]="OJPEGDecode";
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
@@ -811,17 +795,16 @@ OJPEGDecode(TIFF* tif, uint8* buf, tmsize_t cc, uint16 s)
 	return(1);
 }
 
-static int
-OJPEGDecodeRaw(TIFF* tif, uint8* buf, tmsize_t cc)
+static int OJPEGDecodeRaw(TIFF *tif : itype(_Ptr<TIFF>), uint8 *buf : itype(_Array_ptr<uint8>) count(cc), tmsize_t cc)
 {
 	static const char module[]="OJPEGDecodeRaw";
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
-	uint8* m;
+	_Array_ptr<uint8> m = ((void *)0);
 	tmsize_t n;
 	uint8* oy;
 	uint8* ocb;
 	uint8* ocr;
-	uint8* p;
+	_Array_ptr<uint8> p = ((void *)0);
 	uint32 q;
 	uint8* r;
 	uint8 sx,sy;
@@ -837,7 +820,7 @@ OJPEGDecodeRaw(TIFF* tif, uint8* buf, tmsize_t cc)
 	{
 		if (sp->subsampling_convert_state==0)
 		{
-			const jpeg_decompress_struct* cinfo = &sp->libjpeg_jpeg_decompress_struct;
+			_Ptr<const jpeg_decompress_struct> cinfo = ((void *)0) = &sp->libjpeg_jpeg_decompress_struct;
 			int width = 0;
 			int last_col_width = 0;
 			int jpeg_bytes;
@@ -899,12 +882,11 @@ OJPEGDecodeRaw(TIFF* tif, uint8* buf, tmsize_t cc)
 	return(1);
 }
 
-static int
-OJPEGDecodeScanlines(TIFF* tif, uint8* buf, tmsize_t cc)
+static int OJPEGDecodeScanlines(TIFF *tif : itype(_Ptr<TIFF>), uint8 *buf : itype(_Array_ptr<uint8>) count(cc), tmsize_t cc)
 {
 	static const char module[]="OJPEGDecodeScanlines";
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
-	uint8* m;
+	_Array_ptr<uint8> m = ((void *)0);
 	tmsize_t n;
 	if (cc%sp->bytes_per_line!=0)
 	{
@@ -924,8 +906,7 @@ OJPEGDecodeScanlines(TIFF* tif, uint8* buf, tmsize_t cc)
 	return(1);
 }
 
-static void
-OJPEGPostDecode(TIFF* tif, uint8* buf, tmsize_t cc)
+static void OJPEGPostDecode(TIFF *tif, uint8 *buf, tmsize_t cc)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	(void)buf;
@@ -939,16 +920,14 @@ OJPEGPostDecode(TIFF* tif, uint8* buf, tmsize_t cc)
 	}
 }
 
-static int
-OJPEGSetupEncode(TIFF* tif)
+static int OJPEGSetupEncode(TIFF *tif)
 {
 	static const char module[]="OJPEGSetupEncode";
 	TIFFErrorExt(tif->tif_clientdata,module,"OJPEG encoding not supported; use new-style JPEG compression instead");
 	return(0);
 }
 
-static int
-OJPEGPreEncode(TIFF* tif, uint16 s)
+static int OJPEGPreEncode(TIFF *tif, uint16 s)
 {
 	static const char module[]="OJPEGPreEncode";
 	(void)s;
@@ -956,8 +935,7 @@ OJPEGPreEncode(TIFF* tif, uint16 s)
 	return(0);
 }
 
-static int
-OJPEGEncode(TIFF* tif, uint8* buf, tmsize_t cc, uint16 s)
+static int OJPEGEncode(TIFF *tif, uint8 *buf, tmsize_t cc, uint16 s)
 {
 	static const char module[]="OJPEGEncode";
 	(void)buf;
@@ -967,16 +945,14 @@ OJPEGEncode(TIFF* tif, uint8* buf, tmsize_t cc, uint16 s)
 	return(0);
 }
 
-static int
-OJPEGPostEncode(TIFF* tif)
+static int OJPEGPostEncode(TIFF *tif)
 {
 	static const char module[]="OJPEGPostEncode";
 	TIFFErrorExt(tif->tif_clientdata,module,"OJPEG encoding not supported; use new-style JPEG compression instead");
 	return(0);
 }
 
-static void
-OJPEGCleanup(TIFF* tif)
+static void OJPEGCleanup(TIFF *tif)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	if (sp!=0)
@@ -1022,8 +998,7 @@ OJPEGCleanup(TIFF* tif)
 	}
 }
 
-static void
-OJPEGSubsamplingCorrect(TIFF* tif)
+static void OJPEGSubsamplingCorrect(TIFF *tif : itype(_Ptr<TIFF>))
 {
 	static const char module[]="OJPEGSubsamplingCorrect";
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
@@ -1076,8 +1051,7 @@ OJPEGSubsamplingCorrect(TIFF* tif)
 	sp->subsamplingcorrect_done=1;
 }
 
-static int
-OJPEGReadHeaderInfo(TIFF* tif)
+static int OJPEGReadHeaderInfo(TIFF *tif : itype(_Ptr<TIFF>))
 {
 	static const char module[]="OJPEGReadHeaderInfo";
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
@@ -1144,8 +1118,7 @@ OJPEGReadHeaderInfo(TIFF* tif)
 	return(1);
 }
 
-static int
-OJPEGReadSecondarySos(TIFF* tif, uint16 s)
+static int OJPEGReadSecondarySos(TIFF *tif : itype(_Ptr<TIFF>), uint16 s)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	uint8 m;
@@ -1194,8 +1167,7 @@ OJPEGReadSecondarySos(TIFF* tif, uint16 s)
 	return(1);
 }
 
-static int
-OJPEGWriteHeaderInfo(TIFF* tif)
+static int OJPEGWriteHeaderInfo(TIFF *tif : itype(_Ptr<TIFF>))
 {
 	static const char module[]="OJPEGWriteHeaderInfo";
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
@@ -1295,8 +1267,7 @@ OJPEGWriteHeaderInfo(TIFF* tif)
 	return(1);
 }
 
-static void
-OJPEGLibjpegSessionAbort(TIFF* tif)
+static void OJPEGLibjpegSessionAbort(TIFF *tif : itype(_Ptr<TIFF>))
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	assert(sp->libjpeg_session_active!=0);
@@ -1304,8 +1275,7 @@ OJPEGLibjpegSessionAbort(TIFF* tif)
 	sp->libjpeg_session_active=0;
 }
 
-static int
-OJPEGReadHeaderInfoSec(TIFF* tif)
+static int OJPEGReadHeaderInfoSec(_Ptr<TIFF> tif)
 {
 	static const char module[]="OJPEGReadHeaderInfoSec";
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
@@ -1437,8 +1407,7 @@ OJPEGReadHeaderInfoSec(TIFF* tif)
 	return(1);
 }
 
-static int
-OJPEGReadHeaderInfoSecStreamDri(TIFF* tif)
+static int OJPEGReadHeaderInfoSecStreamDri(_Ptr<TIFF> tif)
 {
 	/* This could easily cause trouble in some cases... but no such cases have
            occurred so far */
@@ -1458,8 +1427,7 @@ OJPEGReadHeaderInfoSecStreamDri(TIFF* tif)
 	return(1);
 }
 
-static int
-OJPEGReadHeaderInfoSecStreamDqt(TIFF* tif)
+static int OJPEGReadHeaderInfoSecStreamDqt(_Ptr<TIFF> tif)
 {
 	/* this is a table marker, and it is to be saved as a whole for exact pushing on the jpeg stream later on */
 	static const char module[]="OJPEGReadHeaderInfoSecStreamDqt";
@@ -1520,8 +1488,7 @@ OJPEGReadHeaderInfoSecStreamDqt(TIFF* tif)
 	return(1);
 }
 
-static int
-OJPEGReadHeaderInfoSecStreamDht(TIFF* tif)
+static int OJPEGReadHeaderInfoSecStreamDht(_Ptr<TIFF> tif)
 {
 	/* this is a table marker, and it is to be saved as a whole for exact pushing on the jpeg stream later on */
 	/* TODO: the following assumes there is only one table in this marker... but i'm not quite sure that assumption is guaranteed correct */
@@ -1597,8 +1564,7 @@ OJPEGReadHeaderInfoSecStreamDht(TIFF* tif)
 	return(1);
 }
 
-static int
-OJPEGReadHeaderInfoSecStreamSof(TIFF* tif, uint8 marker_id)
+static int OJPEGReadHeaderInfoSecStreamSof(_Ptr<TIFF> tif, uint8 marker_id)
 {
 	/* this marker needs to be checked, and part of its data needs to be saved for regeneration later on */
 	static const char module[]="OJPEGReadHeaderInfoSecStreamSof";
@@ -1749,8 +1715,7 @@ OJPEGReadHeaderInfoSecStreamSof(TIFF* tif, uint8 marker_id)
 	return(1);
 }
 
-static int
-OJPEGReadHeaderInfoSecStreamSos(TIFF* tif)
+static int OJPEGReadHeaderInfoSecStreamSos(_Ptr<TIFF> tif)
 {
 	/* this marker needs to be checked, and part of its data needs to be saved for regeneration later on */
 	static const char module[]="OJPEGReadHeaderInfoSecStreamSos";
@@ -1797,8 +1762,7 @@ OJPEGReadHeaderInfoSecStreamSos(TIFF* tif)
 	return(1);
 }
 
-static int
-OJPEGReadHeaderInfoSecTablesQTable(TIFF* tif)
+static int OJPEGReadHeaderInfoSecTablesQTable(_Ptr<TIFF> tif)
 {
 	static const char module[]="OJPEGReadHeaderInfoSecTablesQTable";
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
@@ -1856,8 +1820,7 @@ OJPEGReadHeaderInfoSecTablesQTable(TIFF* tif)
 	return(1);
 }
 
-static int
-OJPEGReadHeaderInfoSecTablesDcTable(TIFF* tif)
+static int OJPEGReadHeaderInfoSecTablesDcTable(_Ptr<TIFF> tif)
 {
 	static const char module[]="OJPEGReadHeaderInfoSecTablesDcTable";
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
@@ -1925,8 +1888,7 @@ OJPEGReadHeaderInfoSecTablesDcTable(TIFF* tif)
 	return(1);
 }
 
-static int
-OJPEGReadHeaderInfoSecTablesAcTable(TIFF* tif)
+static int OJPEGReadHeaderInfoSecTablesAcTable(_Ptr<TIFF> tif)
 {
 	static const char module[]="OJPEGReadHeaderInfoSecTablesAcTable";
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
@@ -1994,8 +1956,7 @@ OJPEGReadHeaderInfoSecTablesAcTable(TIFF* tif)
 	return(1);
 }
 
-static int
-OJPEGReadBufferFill(OJPEGState* sp)
+static int OJPEGReadBufferFill(OJPEGState *sp : itype(_Ptr<OJPEGState>))
 {
 	uint16 m;
 	tmsize_t n;
@@ -2079,8 +2040,7 @@ OJPEGReadBufferFill(OJPEGState* sp)
 	return(1);
 }
 
-static int
-OJPEGReadByte(OJPEGState* sp, uint8* byte)
+static int OJPEGReadByte(OJPEGState *sp : itype(_Ptr<OJPEGState>), _Ptr<uint8> byte)
 {
 	if (sp->in_buffer_togo==0)
 	{
@@ -2094,8 +2054,7 @@ OJPEGReadByte(OJPEGState* sp, uint8* byte)
 	return(1);
 }
 
-static int
-OJPEGReadBytePeek(OJPEGState* sp, uint8* byte)
+static int OJPEGReadBytePeek(OJPEGState *sp : itype(_Ptr<OJPEGState>), _Ptr<uint8> byte)
 {
 	if (sp->in_buffer_togo==0)
 	{
@@ -2107,16 +2066,14 @@ OJPEGReadBytePeek(OJPEGState* sp, uint8* byte)
 	return(1);
 }
 
-static void
-OJPEGReadByteAdvance(OJPEGState* sp)
+static void OJPEGReadByteAdvance(OJPEGState *sp : itype(_Ptr<OJPEGState>))
 {
 	assert(sp->in_buffer_togo>0);
 	sp->in_buffer_cur++;
 	sp->in_buffer_togo--;
 }
 
-static int
-OJPEGReadWord(OJPEGState* sp, uint16* word)
+static int OJPEGReadWord(OJPEGState *sp : itype(_Ptr<OJPEGState>), _Ptr<uint16> word)
 {
 	uint8 m;
 	if (OJPEGReadByte(sp,&m)==0)
@@ -2128,8 +2085,7 @@ OJPEGReadWord(OJPEGState* sp, uint16* word)
 	return(1);
 }
 
-static int
-OJPEGReadBlock(OJPEGState* sp, uint16 len, void* mem)
+static int OJPEGReadBlock(OJPEGState *sp : itype(_Ptr<OJPEGState>), uint16 len, void *mem)
 {
 	uint16 mlen;
 	uint8* mmem;
@@ -2157,8 +2113,7 @@ OJPEGReadBlock(OJPEGState* sp, uint16 len, void* mem)
 	return(1);
 }
 
-static void
-OJPEGReadSkip(OJPEGState* sp, uint16 len)
+static void OJPEGReadSkip(OJPEGState *sp : itype(_Ptr<OJPEGState>), uint16 len)
 {
 	uint16 m;
 	uint16 n;
@@ -2187,8 +2142,7 @@ OJPEGReadSkip(OJPEGState* sp, uint16 len)
 	}
 }
 
-static int
-OJPEGWriteStream(TIFF* tif, void** mem, uint32* len)
+static int OJPEGWriteStream(_Ptr<TIFF> tif, void **mem, _Ptr<uint32> len)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	*len=0;
@@ -2260,8 +2214,7 @@ OJPEGWriteStream(TIFF* tif, void** mem, uint32* len)
 	return(1);
 }
 
-static void
-OJPEGWriteStreamSoi(TIFF* tif, void** mem, uint32* len)
+static void OJPEGWriteStreamSoi(_Ptr<TIFF> tif, void **mem, _Ptr<uint32> len)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	assert(OJPEG_BUFFER>=2);
@@ -2272,8 +2225,7 @@ OJPEGWriteStreamSoi(TIFF* tif, void** mem, uint32* len)
 	sp->out_state++;
 }
 
-static void
-OJPEGWriteStreamQTable(TIFF* tif, uint8 table_index, void** mem, uint32* len)
+static void OJPEGWriteStreamQTable(_Ptr<TIFF> tif, uint8 table_index, void **mem, _Ptr<uint32> len)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	if (sp->qtable[table_index]!=0)
@@ -2284,8 +2236,7 @@ OJPEGWriteStreamQTable(TIFF* tif, uint8 table_index, void** mem, uint32* len)
 	sp->out_state++;
 }
 
-static void
-OJPEGWriteStreamDcTable(TIFF* tif, uint8 table_index, void** mem, uint32* len)
+static void OJPEGWriteStreamDcTable(_Ptr<TIFF> tif, uint8 table_index, void **mem, _Ptr<uint32> len)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	if (sp->dctable[table_index]!=0)
@@ -2296,8 +2247,7 @@ OJPEGWriteStreamDcTable(TIFF* tif, uint8 table_index, void** mem, uint32* len)
 	sp->out_state++;
 }
 
-static void
-OJPEGWriteStreamAcTable(TIFF* tif, uint8 table_index, void** mem, uint32* len)
+static void OJPEGWriteStreamAcTable(_Ptr<TIFF> tif, uint8 table_index, void **mem, _Ptr<uint32> len)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	if (sp->actable[table_index]!=0)
@@ -2308,8 +2258,7 @@ OJPEGWriteStreamAcTable(TIFF* tif, uint8 table_index, void** mem, uint32* len)
 	sp->out_state++;
 }
 
-static void
-OJPEGWriteStreamDri(TIFF* tif, void** mem, uint32* len)
+static void OJPEGWriteStreamDri(_Ptr<TIFF> tif, void **mem, _Ptr<uint32> len)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	assert(OJPEG_BUFFER>=6);
@@ -2327,8 +2276,7 @@ OJPEGWriteStreamDri(TIFF* tif, void** mem, uint32* len)
 	sp->out_state++;
 }
 
-static void
-OJPEGWriteStreamSof(TIFF* tif, void** mem, uint32* len)
+static void OJPEGWriteStreamSof(_Ptr<TIFF> tif, void **mem, _Ptr<uint32> len)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	uint8 m;
@@ -2363,8 +2311,7 @@ OJPEGWriteStreamSof(TIFF* tif, void** mem, uint32* len)
 	sp->out_state++;
 }
 
-static void
-OJPEGWriteStreamSos(TIFF* tif, void** mem, uint32* len)
+static void OJPEGWriteStreamSos(_Ptr<TIFF> tif, void **mem, _Ptr<uint32> len)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	uint8 m;
@@ -2395,8 +2342,7 @@ OJPEGWriteStreamSos(TIFF* tif, void** mem, uint32* len)
 	sp->out_state++;
 }
 
-static int
-OJPEGWriteStreamCompressed(TIFF* tif, void** mem, uint32* len)
+static int OJPEGWriteStreamCompressed(_Ptr<TIFF> tif, void **mem, _Ptr<uint32> len)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	if (sp->in_buffer_togo==0)
@@ -2428,8 +2374,7 @@ OJPEGWriteStreamCompressed(TIFF* tif, void** mem, uint32* len)
 	return(1);
 }
 
-static void
-OJPEGWriteStreamRst(TIFF* tif, void** mem, uint32* len)
+static void OJPEGWriteStreamRst(_Ptr<TIFF> tif, void **mem, _Ptr<uint32> len)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	assert(OJPEG_BUFFER>=2);
@@ -2443,8 +2388,7 @@ OJPEGWriteStreamRst(TIFF* tif, void** mem, uint32* len)
 	sp->out_state=ososCompressed;
 }
 
-static void
-OJPEGWriteStreamEoi(TIFF* tif, void** mem, uint32* len)
+static void OJPEGWriteStreamEoi(_Ptr<TIFF> tif, void **mem, _Ptr<uint32> len)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	assert(OJPEG_BUFFER>=2);
@@ -2455,8 +2399,7 @@ OJPEGWriteStreamEoi(TIFF* tif, void** mem, uint32* len)
 }
 
 #ifndef LIBJPEG_ENCAP_EXTERNAL
-static int
-jpeg_create_decompress_encap(OJPEGState* sp, jpeg_decompress_struct* cinfo)
+static int jpeg_create_decompress_encap(_Ptr<OJPEGState> sp, _Ptr<jpeg_decompress_struct> cinfo)
 {
 	if( SETJMP(sp->exit_jmpbuf) )
 		return 0;
@@ -2468,8 +2411,7 @@ jpeg_create_decompress_encap(OJPEGState* sp, jpeg_decompress_struct* cinfo)
 #endif
 
 #ifndef LIBJPEG_ENCAP_EXTERNAL
-static int
-jpeg_read_header_encap(OJPEGState* sp, jpeg_decompress_struct* cinfo, uint8 require_image)
+static int jpeg_read_header_encap(_Ptr<OJPEGState> sp, _Ptr<jpeg_decompress_struct> cinfo, uint8 require_image)
 {
 	if( SETJMP(sp->exit_jmpbuf) )
 		return 0;
@@ -2481,8 +2423,7 @@ jpeg_read_header_encap(OJPEGState* sp, jpeg_decompress_struct* cinfo, uint8 requ
 #endif
 
 #ifndef LIBJPEG_ENCAP_EXTERNAL
-static int
-jpeg_start_decompress_encap(OJPEGState* sp, jpeg_decompress_struct* cinfo)
+static int jpeg_start_decompress_encap(_Ptr<OJPEGState> sp, _Ptr<jpeg_decompress_struct> cinfo)
 {
 	if( SETJMP(sp->exit_jmpbuf) )
 		return 0;
@@ -2494,8 +2435,7 @@ jpeg_start_decompress_encap(OJPEGState* sp, jpeg_decompress_struct* cinfo)
 #endif
 
 #ifndef LIBJPEG_ENCAP_EXTERNAL
-static int
-jpeg_read_scanlines_encap(OJPEGState* sp, jpeg_decompress_struct* cinfo, void* scanlines, uint32 max_lines)
+static int jpeg_read_scanlines_encap(_Ptr<OJPEGState> sp, _Ptr<jpeg_decompress_struct> cinfo, void *scanlines, uint32 max_lines)
 {
 	if( SETJMP(sp->exit_jmpbuf) )
 		return 0;
@@ -2507,8 +2447,7 @@ jpeg_read_scanlines_encap(OJPEGState* sp, jpeg_decompress_struct* cinfo, void* s
 #endif
 
 #ifndef LIBJPEG_ENCAP_EXTERNAL
-static int
-jpeg_read_raw_data_encap(OJPEGState* sp, jpeg_decompress_struct* cinfo, void* data, uint32 max_lines)
+static int jpeg_read_raw_data_encap(_Ptr<OJPEGState> sp, _Ptr<jpeg_decompress_struct> cinfo, void *data, uint32 max_lines)
 {
 	if( SETJMP(sp->exit_jmpbuf) )
 		return 0;
@@ -2520,24 +2459,21 @@ jpeg_read_raw_data_encap(OJPEGState* sp, jpeg_decompress_struct* cinfo, void* da
 #endif
 
 #ifndef LIBJPEG_ENCAP_EXTERNAL
-static void
-jpeg_encap_unwind(TIFF* tif)
+static void jpeg_encap_unwind(_Ptr<TIFF> tif)
 {
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	LONGJMP(sp->exit_jmpbuf,1);
 }
 #endif
 
-static void
-OJPEGLibjpegJpegErrorMgrOutputMessage(jpeg_common_struct* cinfo)
+static void OJPEGLibjpegJpegErrorMgrOutputMessage(_Ptr<jpeg_common_struct> cinfo)
 {
 	char buffer[JMSG_LENGTH_MAX];
 	(*cinfo->err->format_message)(cinfo,buffer);
 	TIFFWarningExt(((TIFF*)(cinfo->client_data))->tif_clientdata,"LibJpeg","%s",buffer);
 }
 
-static void
-OJPEGLibjpegJpegErrorMgrErrorExit(jpeg_common_struct* cinfo)
+static void OJPEGLibjpegJpegErrorMgrErrorExit(_Ptr<jpeg_common_struct> cinfo)
 {
 	char buffer[JMSG_LENGTH_MAX];
 	(*cinfo->err->format_message)(cinfo,buffer);
@@ -2545,8 +2481,7 @@ OJPEGLibjpegJpegErrorMgrErrorExit(jpeg_common_struct* cinfo)
 	jpeg_encap_unwind((TIFF*)(cinfo->client_data));
 }
 
-static void
-OJPEGLibjpegJpegSourceMgrInitSource(jpeg_decompress_struct* cinfo)
+static void OJPEGLibjpegJpegSourceMgrInitSource(_Ptr<jpeg_decompress_struct> cinfo)
 {
 	(void)cinfo;
 }
@@ -2554,7 +2489,7 @@ OJPEGLibjpegJpegSourceMgrInitSource(jpeg_decompress_struct* cinfo)
 static boolean
 OJPEGLibjpegJpegSourceMgrFillInputBuffer(jpeg_decompress_struct* cinfo)
 {
-	TIFF* tif=(TIFF*)cinfo->client_data;
+	_Ptr<TIFF> tif = ((void *)0)=(TIFF*)cinfo->client_data;
 	OJPEGState* sp=(OJPEGState*)tif->tif_data;
 	void* mem=0;
 	uint32 len=0U;
@@ -2568,10 +2503,9 @@ OJPEGLibjpegJpegSourceMgrFillInputBuffer(jpeg_decompress_struct* cinfo)
 	return(1);
 }
 
-static void
-OJPEGLibjpegJpegSourceMgrSkipInputData(jpeg_decompress_struct* cinfo, long num_bytes)
+static void OJPEGLibjpegJpegSourceMgrSkipInputData(_Ptr<jpeg_decompress_struct> cinfo, long num_bytes)
 {
-	TIFF* tif=(TIFF*)cinfo->client_data;
+	_Ptr<TIFF> tif = ((void *)0)=(TIFF*)cinfo->client_data;
 	(void)num_bytes;
 	TIFFErrorExt(tif->tif_clientdata,"LibJpeg","Unexpected error");
 	jpeg_encap_unwind(tif);
@@ -2584,7 +2518,7 @@ OJPEGLibjpegJpegSourceMgrSkipInputData(jpeg_decompress_struct* cinfo, long num_b
 static boolean
 OJPEGLibjpegJpegSourceMgrResyncToRestart(jpeg_decompress_struct* cinfo, int desired)
 {
-	TIFF* tif=(TIFF*)cinfo->client_data;
+	_Ptr<TIFF> tif = ((void *)0)=(TIFF*)cinfo->client_data;
 	(void)desired;
 	TIFFErrorExt(tif->tif_clientdata,"LibJpeg","Unexpected error");
 	jpeg_encap_unwind(tif);
@@ -2594,8 +2528,7 @@ OJPEGLibjpegJpegSourceMgrResyncToRestart(jpeg_decompress_struct* cinfo, int desi
 #pragma warning( pop ) 
 #endif
 
-static void
-OJPEGLibjpegJpegSourceMgrTermSource(jpeg_decompress_struct* cinfo)
+static void OJPEGLibjpegJpegSourceMgrTermSource(_Ptr<jpeg_decompress_struct> cinfo)
 {
 	(void)cinfo;
 }

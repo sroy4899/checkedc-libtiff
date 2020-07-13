@@ -287,9 +287,7 @@ exifFieldArray = { tfiatExif, 0, TIFFArrayCount(exifFields), (TIFFField*) exifFi
  *  in types passed to lfind() on different systems. 
  */
 
-static void *
-td_lfind(const void *key, const void *base, size_t *nmemb, size_t size,
-         int(*compar)(const void *, const void *))
+static void * td_lfind(const void *key, const void *base, _Ptr<size_t> nmemb, size_t size, _Ptr<int (const void *, const void *)> compar)
 {
     char *element, *end;
 
@@ -301,20 +299,17 @@ td_lfind(const void *key, const void *base, size_t *nmemb, size_t size,
     return NULL;
 }
 
-const TIFFFieldArray*
-_TIFFGetFields(void)
+_Ptr<const TIFFFieldArray> _TIFFGetFields(void)
 {
 	return(&tiffFieldArray);
 }
 
-const TIFFFieldArray*
-_TIFFGetExifFields(void)
+_Ptr<const TIFFFieldArray> _TIFFGetExifFields(void)
 {
 	return(&exifFieldArray);
 }
 
-void
-_TIFFSetupFields(TIFF* tif, const TIFFFieldArray* fieldarray)
+void _TIFFSetupFields(TIFF *tif, _Ptr<const TIFFFieldArray> fieldarray)
 {
 	if (tif->tif_fields && tif->tif_nfields > 0) {
 		uint32 i;
@@ -338,11 +333,10 @@ _TIFFSetupFields(TIFF* tif, const TIFFFieldArray* fieldarray)
 	}
 }
 
-static int
-tagCompare(const void* a, const void* b)
+static int tagCompare(const void *a, const void *b)
 {
-	const TIFFField* ta = *(const TIFFField**) a;
-	const TIFFField* tb = *(const TIFFField**) b;
+	_Ptr<const TIFFField> ta =  *(const TIFFField**) a;
+	_Ptr<const TIFFField> tb =  *(const TIFFField**) b;
 	/* NB: be careful of return values for 16-bit platforms */
 	if (ta->field_tag != tb->field_tag)
 		return (int)ta->field_tag - (int)tb->field_tag;
@@ -351,11 +345,10 @@ tagCompare(const void* a, const void* b)
 			0 : ((int)tb->field_type - (int)ta->field_type);
 }
 
-static int
-tagNameCompare(const void* a, const void* b)
+static int tagNameCompare(const void *a, const void *b)
 {
-	const TIFFField* ta = *(const TIFFField**) a;
-	const TIFFField* tb = *(const TIFFField**) b;
+	_Ptr<const TIFFField> ta =  *(const TIFFField**) a;
+	_Ptr<const TIFFField> tb =  *(const TIFFField**) b;
 	int ret = strcmp(ta->field_name, tb->field_name);
 
 	if (ret)
@@ -365,11 +358,10 @@ tagNameCompare(const void* a, const void* b)
 			0 : ((int)tb->field_type - (int)ta->field_type);
 }
 
-int
-_TIFFMergeFields(TIFF* tif, const TIFFField info[], uint32 n)
+int _TIFFMergeFields(TIFF *tif, const TIFFField info[], uint32 n)
 {
 	static const char module[] = "_TIFFMergeFields";
-	static const char reason[] = "for fields array";
+	static const char reason _Checked[17] =  "for fields array";
 	/* TIFFField** tp; */
 	uint32 i;
 
@@ -410,8 +402,7 @@ _TIFFMergeFields(TIFF* tif, const TIFFField info[], uint32 n)
 	return n;
 }
 
-void
-_TIFFPrintFieldInfo(TIFF* tif, FILE* fd)
+void _TIFFPrintFieldInfo(_Ptr<TIFF> tif, FILE *fd)
 {
 	uint32 i;
 
@@ -434,8 +425,7 @@ _TIFFPrintFieldInfo(TIFF* tif, FILE* fd)
 /*
  * Return size of TIFFDataType in bytes
  */
-int
-TIFFDataWidth(TIFFDataType type)
+int TIFFDataWidth(TIFFDataType type)
 {
 	switch(type)
 	{
@@ -472,8 +462,7 @@ TIFFDataWidth(TIFFDataType type)
  * to store the value. For TIFF_RATIONAL values TIFFDataWidth() returns 8,
  * but we use 4-byte float to represent rationals.
  */
-int
-_TIFFDataSize(TIFFDataType type)
+int _TIFFDataSize(TIFFDataType type)
 {
 	switch (type)
 	{
@@ -502,8 +491,7 @@ _TIFFDataSize(TIFFDataType type)
 	}
 }
 
-const TIFFField*
-TIFFFindField(TIFF* tif, uint32 tag, TIFFDataType dt)
+const TIFFField * TIFFFindField(TIFF *tif, uint32 tag, TIFFDataType dt)
 {
 	TIFFField key = {0, 0, 0, TIFF_NOTYPE, 0, 0, 0, 0, 0, 0, NULL, NULL};
 	TIFFField* pkey = &key;
@@ -527,8 +515,7 @@ TIFFFindField(TIFF* tif, uint32 tag, TIFFDataType dt)
 	return tif->tif_foundfield = (ret ? *ret : NULL);
 }
 
-static const TIFFField*
-_TIFFFindFieldByName(TIFF* tif, const char *field_name, TIFFDataType dt)
+static const TIFFField * _TIFFFindFieldByName(_Ptr<TIFF> tif, const char *field_name, TIFFDataType dt)
 {
 	TIFFField key = {0, 0, 0, TIFF_NOTYPE, 0, 0, 0, 0, 0, 0, NULL, NULL};
 	TIFFField* pkey = &key;
@@ -554,8 +541,7 @@ _TIFFFindFieldByName(TIFF* tif, const char *field_name, TIFFDataType dt)
 	return tif->tif_foundfield = (ret ? *ret : NULL);
 }
 
-const TIFFField*
-TIFFFieldWithTag(TIFF* tif, uint32 tag)
+const TIFFField * TIFFFieldWithTag(TIFF *tif, uint32 tag)
 {
 	const TIFFField* fip = TIFFFindField(tif, tag, TIFF_ANY);
 	if (!fip) {
@@ -566,8 +552,7 @@ TIFFFieldWithTag(TIFF* tif, uint32 tag)
 	return (fip);
 }
 
-const TIFFField*
-TIFFFieldWithName(TIFF* tif, const char *field_name)
+const TIFFField * TIFFFieldWithName(_Ptr<TIFF> tif, const char *field_name)
 {
 	const TIFFField* fip =
 		_TIFFFindFieldByName(tif, field_name, TIFF_ANY);
@@ -578,44 +563,37 @@ TIFFFieldWithName(TIFF* tif, const char *field_name)
 	return (fip);
 }
 
-uint32
-TIFFFieldTag(const TIFFField* fip)
+uint32 TIFFFieldTag(const TIFFField *fip : itype(_Ptr<const TIFFField>))
 {
 	return fip->field_tag;
 }
 
-const char *
-TIFFFieldName(const TIFFField* fip)
+const char * TIFFFieldName(_Ptr<const TIFFField> fip)
 {
 	return fip->field_name;
 }
 
-TIFFDataType
-TIFFFieldDataType(const TIFFField* fip)
+TIFFDataType TIFFFieldDataType(_Ptr<const TIFFField> fip)
 {
 	return fip->field_type;
 }
 
-int
-TIFFFieldPassCount(const TIFFField* fip)
+int TIFFFieldPassCount(_Ptr<const TIFFField> fip)
 {
 	return fip->field_passcount;
 }
 
-int
-TIFFFieldReadCount(const TIFFField* fip)
+int TIFFFieldReadCount(_Ptr<const TIFFField> fip)
 {
 	return fip->field_readcount;
 }
 
-int
-TIFFFieldWriteCount(const TIFFField* fip)
+int TIFFFieldWriteCount(_Ptr<const TIFFField> fip)
 {
 	return fip->field_writecount;
 }
 
-const TIFFField*
-_TIFFFindOrRegisterField(TIFF *tif, uint32 tag, TIFFDataType dt)
+const TIFFField * _TIFFFindOrRegisterField(TIFF *tif, uint32 tag, TIFFDataType dt)
 
 {
 	const TIFFField *fld;
@@ -630,8 +608,7 @@ _TIFFFindOrRegisterField(TIFF *tif, uint32 tag, TIFFDataType dt)
 	return fld;
 }
 
-TIFFField*
-_TIFFCreateAnonField(TIFF *tif, uint32 tag, TIFFDataType field_type)
+TIFFField * _TIFFCreateAnonField(TIFF *tif : itype(_Ptr<TIFF>), uint32 tag, TIFFDataType field_type)
 {
 	TIFFField *fld;
 	(void) tif;
@@ -731,8 +708,7 @@ _TIFFCreateAnonField(TIFF *tif, uint32 tag, TIFFDataType field_type)
  * libtiff versions.
  ****************************************************************************/
 
-static TIFFSetGetFieldType
-_TIFFSetGetType(TIFFDataType type, short count, unsigned char passcount)
+static TIFFSetGetFieldType _TIFFSetGetType(TIFFDataType type, short count, unsigned char passcount)
 {
 	if (type == TIFF_ASCII && count == TIFF_VARIABLE && passcount == 0)
 		return TIFF_SETGET_ASCII;
@@ -884,11 +860,10 @@ _TIFFSetGetType(TIFFDataType type, short count, unsigned char passcount)
 	return TIFF_SETGET_UNDEFINED;
 }
 
-int
-TIFFMergeFieldInfo(TIFF* tif, const TIFFFieldInfo info[], uint32 n)
+int TIFFMergeFieldInfo(TIFF *tif, _Array_ptr<const TIFFFieldInfo> info : count(n), uint32 n)
 {
 	static const char module[] = "TIFFMergeFieldInfo";
-	static const char reason[] = "for fields array";
+	static const char reason _Checked[17] =  "for fields array";
 	TIFFField *tp;
 	size_t nfields;
 	uint32 i;
@@ -954,8 +929,7 @@ TIFFMergeFieldInfo(TIFF* tif, const TIFFFieldInfo info[], uint32 n)
 	return 0;
 }
 
-int
-_TIFFCheckFieldIsValidForCodec(TIFF *tif, ttag_t tag)
+int _TIFFCheckFieldIsValidForCodec(_Ptr<TIFF> tif, ttag_t tag)
 {
 	/* Filter out non-codec specific tags */
 	switch (tag) {
