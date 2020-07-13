@@ -3,6 +3,7 @@ INCLUDES=/Users/shilpa-roy/checkedc/include/
 BASEDIR=./libtiff
 
 CPATH=$INCLUDES $CCONV \
+-alltypes \
 -output-postfix=checked \
 -base-dir="$BASEDIR" \
 $BASEDIR/tif_ojpeg.c \
